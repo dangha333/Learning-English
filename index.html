@@ -145,6 +145,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script>
     // Cấu hình Firebase cho web app
     const firebaseConfig = {
@@ -157,7 +158,23 @@
       measurementId: "G-5FB87HKJGY"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+    // Firestore helpers
+    async function saveLearnedToFirestore(uid, learned) {
+      if (!uid) return;
+      try {
+        await db.collection('users').doc(uid).set({ learned }, { merge: true });
+      } catch (e) { console.error('Lỗi lưu Firestore:', e); }
+    }
+    async function loadLearnedFromFirestore(uid) {
+      if (!uid) return null;
+      try {
+        const doc = await db.collection('users').doc(uid).get();
+        return doc.exists && doc.data().learned ? doc.data().learned : [];
+      } catch (e) { console.error('Lỗi tải Firestore:', e); return null; }
+    }
+
     // UI logic cho popup đăng nhập/đăng ký
     // Popup đăng nhập/đăng ký, Google sign-in, logout, toast
     (function() {
@@ -246,10 +263,17 @@
         showToast('Đăng xuất thành công!', '#60a5fa');
       };
       // Hiển thị nút đăng nhập/đăng xuất phù hợp
-      auth.onAuthStateChanged(user => {
+      // Khi trạng thái đăng nhập thay đổi, load dữ liệu Firestore nếu có
+      auth.onAuthStateChanged(async user => {
         if(user) {
           openAuthBtn.style.display = 'none';
           logoutBtn.style.display = 'inline-block';
+          // Load "learned" từ Firestore
+          const learned = await loadLearnedFromFirestore(user.uid);
+          if (learned) {
+            localStorage.setItem(LS_KEYS.learned, JSON.stringify(learned));
+            renderLearned();
+          }
         } else {
           openAuthBtn.style.display = 'inline-block';
           logoutBtn.style.display = 'none';
@@ -414,15 +438,17 @@
     }
 
     /******************** Finish Day ********************/
-    function finishDay(){
+    async function finishDay(){
       const set = ensureTodaySet();
       const items = set.items.map(i=>({w:CORPUS[i].w, p:CORPUS[i].p, v:CORPUS[i].v}));
-      const learned = load(LS_KEYS.learned, []);
+      let learned = load(LS_KEYS.learned, []);
       if(!learned.find(g=>g.date===set.date)){
         learned.push({date:set.date, items});
         save(LS_KEYS.learned, learned);
         markUsed(set.items);
         updateStreak();
+        // Nếu đã đăng nhập thì lưu lên Firestore
+        if(auth.currentUser) await saveLearnedToFirestore(auth.currentUser.uid, learned);
         alert('Đã lưu 5 từ của ngày ' + set.date + ' vào danh sách đã học.');
       } else {
         alert('Ngày hôm nay đã được lưu trước đó.');
