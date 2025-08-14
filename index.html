@@ -842,12 +842,100 @@
     <span id="sidebarToggleIcon">☰</span>
   </button>
   <!-- Sidebar -->
-  <aside id="sidebar" class="hidden" style="position:fixed;top:0;left:0;height:100vh;width:320px;max-width:90vw;z-index:2000;background:rgba(255,255,255,0.95);backdrop-filter:blur(16px);box-shadow:4px 0 32px #ffb38533;transition:transform 0.35s cubic-bezier(.4,2,.6,1);transform:translateX(-100%);display:flex;flex-direction:column;padding:32px 24px 24px 24px;gap:32px;">
+  <aside id="sidebar" class="hidden sidebar-glass">
+  <style>
+    /* Sidebar glassmorphism & animation */
+    #sidebar.sidebar-glass {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 320px;
+      max-width: 90vw;
+      z-index: 2000;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 185, 115, 0) 100%);
+      backdrop-filter: blur(22px) saturate(1.2);
+      -webkit-backdrop-filter: blur(22px) saturate(1.2);
+      box-shadow: 8px 0 32px 0 #ffb38544, 0 8px 32px 0 #ff9a8b00;
+      border-top-right-radius: 32px;
+      border-bottom-right-radius: 32px;
+      border-right: 2.5px solid #180c3bcc;
+      border-left: none;
+      transition: transform 0.45s cubic-bezier(.4,2,.6,1), box-shadow 0.3s, background 0.3s;
+      transform: translateX(-100%);
+      display: flex;
+      flex-direction: column;
+      padding: 32px 24px 24px 24px;
+      gap: 32px;
+      opacity: 0.98;
+      animation: sidebarFadeIn 0.7s cubic-bezier(.4,2,.6,1);
+    }
+    #sidebar.sidebar-glass:not(.hidden) {
+      box-shadow: 16px 0 48px 0 #00000066, 0 16px 48px 0 #ff9a8b33;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 185, 115, 0.027) 100%);
+      opacity: 1;
+      animation: sidebarSlideIn 0.5s cubic-bezier(.4,2,.6,1);
+    }
+    @keyframes sidebarSlideIn {
+      from { transform: translateX(-120%); opacity: 0.7; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes sidebarFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 0.98; }
+    }
+    #sidebar.sidebar-glass .btn {
+      box-shadow: 0 2px 8px #ffb38522;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.18s;
+    }
+    #sidebar.sidebar-glass .btn:hover {
+      background: linear-gradient(90deg, #ffb385, #ff9a8b);
+      color: #fff;
+      transform: scale(1.04) translateY(-2px);
+      box-shadow: 0 4px 16px #ffb38544;
+    }
+    #sidebar.sidebar-glass h2 {
+      background: linear-gradient(90deg, #ffb385, #ff9a8b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #fff6;
+    }
+    #sidebar.sidebar-glass [id^="sidebar"] {
+      text-shadow: 0 1px 4px #fff4;
+    }
+    #sidebar.sidebar-glass #sidebarClose {
+      transition: color 0.2s, transform 0.18s;
+    }
+    #sidebar.sidebar-glass #sidebarClose:hover {
+      color: #ffb385;
+      transform: scale(1.2) rotate(8deg);
+    }
+    #sidebar.sidebar-glass::-webkit-scrollbar {
+      width: 8px;
+      background: transparent;
+    }
+    #sidebar.sidebar-glass::-webkit-scrollbar-thumb {
+      background: #ffd6a555;
+      border-radius: 8px;
+    }
+    @media (max-width: 600px) {
+      #sidebar.sidebar-glass {
+        width: 95vw;
+        border-top-right-radius: 18px;
+        border-bottom-right-radius: 18px;
+        padding: 18px 8px 18px 8px;
+      }
+    }
+  </style>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <h2 style="margin:0;font-size:1.5rem;color:#ff9a8b;font-family:'Poppins',sans-serif;">Thông tin</h2>
       <button id="sidebarClose" style="background:none;border:none;font-size:2rem;color:#ff9a8b;cursor:pointer;">&times;</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="pill" id="todayLabel" style="align-self:flex-start;background:rgba(255,186,115,0.18);color:#ff9a8b;font-weight:600;font-size:1.08em;margin-bottom:2px;box-shadow:0 2px 8px #ffb38522;">Hôm nay: —</div>
       <div style="font-size:1.1rem;color:#ffb385;display:flex;align-items:center;gap:8px;">
         <span style="font-size:1.3em;">📈</span> Tiến độ: <span id="sidebarProgress">0</span> / <span id="sidebarTotalWords">0</span> từ
       </div>
@@ -982,9 +1070,7 @@
   <button id="openAuth" class="hidden" style="display:none"></button>
   <div class="container">
       <h1>Mỗi ngày 5 từ tiếng Anh mới</h1>
-      <div class="row">
-        <div class="pill" id="todayLabel">Hôm nay: —</div>
-      </div>
+
 
 
         <nav>
@@ -1314,8 +1400,15 @@ window.showToast = showToast;
     };
 
     /******************** Utilities ********************/
-    const fmtDate = (d=new Date()) => d.toISOString().slice(0,10);
-    const today = fmtDate();
+    // Lấy ngày theo múi giờ Việt Nam (GMT+7)
+    function fmtDateVN(d = new Date()) {
+      // Chuyển sang giờ Việt Nam
+      const tzOffset = 7 * 60; // phút
+      const local = new Date(d.getTime() + (tzOffset - d.getTimezoneOffset()) * 60000);
+      // yyyy-mm-dd
+      return local.toISOString().slice(0, 10);
+    }
+    const today = fmtDateVN();
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
 
@@ -1373,9 +1466,11 @@ window.showToast = showToast;
     /******************** Render Lesson ********************/
     function renderLesson(){
       const set = ensureTodaySet();
-  $('#todayLabel').textContent = 'Hôm nay: ' + set.date;
-  const totalWordsEl = document.getElementById('totalWords');
-  if (totalWordsEl) totalWordsEl.textContent = CORPUS.length;
+      // Hiển thị ngày theo định dạng dd/mm/yyyy
+      const [y, m, d] = set.date.split('-');
+      $('#todayLabel').textContent = 'Hôm nay: ' + `${d}/${m}/${y}`;
+      const totalWordsEl = document.getElementById('totalWords');
+      if (totalWordsEl) totalWordsEl.textContent = CORPUS.length;
 
       const frag = document.createDocumentFragment();
       set.items.forEach((idx, order)=>{
