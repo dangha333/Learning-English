@@ -5,6 +5,136 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mỗi ngày 5 từ tiếng Anh mới</title>
   <style>
+    /* --- Extra Animations & Vibrant Effects --- */
+    /* Rainbow border animation for cards */
+    @keyframes rainbowBorder {
+      0% { box-shadow: 0 0 0 0 #3b82f6, 0 0 0 0 #10b981, 0 0 0 0 #f59e0b, 0 0 0 0 #ef4444; }
+      25% { box-shadow: 0 0 0 4px #3b82f6, 0 0 0 0 #10b981, 0 0 0 0 #f59e0b, 0 0 0 0 #ef4444; }
+      50% { box-shadow: 0 0 0 0 #3b82f6, 0 0 0 4px #10b981, 0 0 0 0 #f59e0b, 0 0 0 0 #ef4444; }
+      75% { box-shadow: 0 0 0 0 #3b82f6, 0 0 0 0 #10b981, 0 0 0 4px #f59e0b, 0 0 0 0 #ef4444; }
+      100% { box-shadow: 0 0 0 0 #3b82f6, 0 0 0 0 #10b981, 0 0 0 0 #f59e0b, 0 0 0 4px #ef4444; }
+    }
+    @keyframes cardFloat {
+      0% { transform: translateY(0) scale(1) rotate(0deg); box-shadow: 0 8px 32px 0 rgba(255, 186, 115, 0.18), 0 2px 8px 0 rgba(255, 154, 139, 0.10); }
+      50% { transform: translateY(-10px) scale(1.025) rotate(-1deg); box-shadow: 0 16px 48px 0 rgba(255, 154, 139, 0.22), 0 8px 24px 0 rgba(255, 186, 115, 0.18); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); box-shadow: 0 8px 32px 0 rgba(255, 186, 115, 0.18), 0 2px 8px 0 rgba(255, 154, 139, 0.10); }
+    }
+    @keyframes cardGlow {
+      0%,100% { box-shadow: 0 0 24px 0 #ffd6a5cc, 0 8px 32px 0 rgba(255, 186, 115, 0.18); }
+      50% { box-shadow: 0 0 48px 8px #ffb385cc, 0 16px 48px 0 rgba(255, 154, 139, 0.22); }
+    }
+    .card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 100%);
+      border-radius: 22px;
+      border: 2.5px solid #ffd6a5;
+      box-shadow: 0 8px 32px 0 rgba(255, 186, 115, 0.18), 0 2px 8px 0 rgba(255, 154, 139, 0.10);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s, border-color 0.18s;
+      animation: fadeInUp 0.6s ease forwards, rainbowBorder 3s linear infinite, cardFloat 4.5s ease-in-out infinite, cardGlow 3.5s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      border-radius: 22px;
+      background: linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+      z-index: 1;
+    }
+    .card:hover {
+      transform: scale(1.035) translateY(-4px) rotate(-1deg);
+      box-shadow: 0 12px 36px 0 rgba(255, 154, 139, 0.18), 0 4px 16px 0 rgba(255, 186, 115, 0.18);
+      border-color: #ffb385;
+    }
+    .card h3 {
+      color: #ff9a8b;
+      text-shadow: 0 2px 8px #fff6;
+    }
+    /* Button pulse animation */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 var(--primary); }
+      70% { box-shadow: 0 0 0 10px rgba(59,130,246,0); }
+      100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+    }
+    .btn.primary, .btn.success, .btn.warn {
+      animation: pulse 2s infinite;
+    }
+    /* Floating glowing effect for .pill */
+    @keyframes floatGlow {
+      0% { filter: drop-shadow(0 0 0px #3b82f6); transform: translateY(0); }
+      50% { filter: drop-shadow(0 0 8px #10b981); transform: translateY(-6px); }
+      100% { filter: drop-shadow(0 0 0px #3b82f6); transform: translateY(0); }
+    }
+    .pill {
+      animation: floatGlow 2.5s ease-in-out infinite;
+    }
+    /* Toast pop-in animation */
+    @keyframes toastPop {
+      0% { opacity: 0; transform: translateY(-60px) scale(0.98) rotate(-3deg); }
+      60% { opacity: 1; transform: translateY(8px) scale(1.04) rotate(2deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    }
+    #toast.show {
+      animation: toastPop 0.7s cubic-bezier(0.4,0,0.2,1);
+    }
+    /* Quiz choice hover pop */
+    .choice:hover {
+      animation: pop 0.25s;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      60% { transform: scale(1.12); }
+      100% { transform: scale(1.04); }
+    }
+    /* Sparkle effect for .user-info-highlight */
+    .user-info-highlight {
+      position: relative;
+      overflow: visible;
+    }
+    .user-info-highlight::after {
+      content: '';
+      position: absolute;
+      top: -8px; left: -8px; right: -8px; bottom: -8px;
+      pointer-events: none;
+      background: radial-gradient(circle, #fff6 0%, transparent 70%);
+      opacity: 0.5;
+      animation: sparkle 2.5s infinite linear;
+    }
+    @keyframes sparkle {
+      0%,100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    /* Modal pop-in */
+    #authModalContent {
+      animation: popupIn 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    /* Details expand animation */
+    details[open] > summary ~ * {
+      animation: fadeInUp 0.5s;
+    }
+    /* Animated gradient background for body - SOFTER, EYE-FRIENDLY TONE */
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    body {
+      background: linear-gradient(120deg, #fffde4, #ffe9b3, #ffd6a5, #ffb385, #ff9a8b, #fffde4);
+      background-size: 1200% 1200%;
+      animation: bgMove 30s ease-in-out infinite;
+    }
+    /* Subtle fade-in for all main sections */
+    main > section {
+      opacity: 0;
+      animation: fadeInUp 1.2s forwards;
+      animation-delay: 0.2s;
+    }
+    main > section:nth-child(2) { animation-delay: 0.4s; }
+    main > section:nth-child(3) { animation-delay: 0.6s; }
+    main > section:nth-child(4) { animation-delay: 0.8s; }
     :root{
       --bg:#0f172a;      /* slate-900 */
       --card:#111827ee;  /* gray-900 */
@@ -84,17 +214,20 @@
       backdrop-filter: blur(12px);
       border-radius: 16px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
-      display: none;
+      display: flex;
       align-items: flex-start;
       gap: 12px;
       padding: 16px;
-      transform: translateX(100%);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-60px) scale(0.98);
+      transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
     }
 
     #toast.show {
-      display: flex;
-      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
     }
 
     .toast-icon {
@@ -704,7 +837,110 @@
   </style>
 </head>
 <body>
+  <!-- Sidebar toggle button -->
+  <button id="sidebarToggle" style="position:fixed;top:28px;left:18px;z-index:2100;background:linear-gradient(135deg,#ffb385,#ff9a8b);color:#fff;border:none;border-radius:50%;width:44px;height:44px;box-shadow:0 2px 8px #0002;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:background 0.2s;outline:none;">
+    <span id="sidebarToggleIcon">☰</span>
+  </button>
+  <!-- Sidebar -->
+  <aside id="sidebar" class="hidden" style="position:fixed;top:0;left:0;height:100vh;width:320px;max-width:90vw;z-index:2000;background:rgba(255,255,255,0.95);backdrop-filter:blur(16px);box-shadow:4px 0 32px #ffb38533;transition:transform 0.35s cubic-bezier(.4,2,.6,1);transform:translateX(-100%);display:flex;flex-direction:column;padding:32px 24px 24px 24px;gap:32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="margin:0;font-size:1.5rem;color:#ff9a8b;font-family:'Poppins',sans-serif;">Thông tin</h2>
+      <button id="sidebarClose" style="background:none;border:none;font-size:2rem;color:#ff9a8b;cursor:pointer;">&times;</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div style="font-size:1.1rem;color:#ffb385;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.3em;">📈</span> Tiến độ: <span id="sidebarProgress">0</span> / <span id="sidebarTotalWords">0</span> từ
+      </div>
+      <div style="font-size:1.1rem;color:#ffb385;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.3em;">🔥</span> Ngày liên tiếp: <span id="sidebarStreak">0</span>
+      </div>
+      <div id="sidebarUserInfo" style="font-size:1.1rem;color:#ff9a8b;display:none;align-items:center;gap:8px;">
+        <span style="font-size:1.3em;">👤</span> <span id="sidebarUserEmail"></span>
+      </div>
+      <button id="sidebarLoginBtn" class="btn primary" style="width:100%;margin-top:10px;">Đăng nhập</button>
+      <button id="sidebarLogoutBtn" class="btn warn" style="width:100%;margin-top:10px;display:none;">Đăng xuất</button>
+    </div>
+  </aside>
   <header>
+  <script>
+    // Sidebar logic
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarProgress = document.getElementById('sidebarProgress');
+    const sidebarTotalWords = document.getElementById('sidebarTotalWords');
+    const sidebarStreak = document.getElementById('sidebarStreak');
+    const sidebarUserInfo = document.getElementById('sidebarUserInfo');
+    const sidebarUserEmail = document.getElementById('sidebarUserEmail');
+    const sidebarLoginBtn = document.getElementById('sidebarLoginBtn');
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+    const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+    function openSidebar() {
+      sidebar.classList.remove('hidden');
+      sidebar.style.transform = 'translateX(0)';
+      sidebarToggle.style.display = 'none';
+    }
+    function closeSidebar() {
+      sidebar.style.transform = 'translateX(-100%)';
+      setTimeout(()=>sidebar.classList.add('hidden'), 350);
+      sidebarToggle.style.display = 'flex';
+    }
+    sidebarToggle.onclick = openSidebar;
+    sidebarClose.onclick = closeSidebar;
+    // Sync sidebar info
+    function updateSidebarInfo() {
+      // Defensive: only update if elements exist
+      if (sidebarProgress && sidebarTotalWords && sidebarStreak) {
+        // These values are now only in sidebar, so use localStorage or fallback
+        const learned = JSON.parse(localStorage.getItem('md5t_learned')||'[]');
+        const totalWords = window.CORPUS ? window.CORPUS.length : 0;
+        const streak = JSON.parse(localStorage.getItem('md5t_streak')||'0');
+        let learnedCount = 0;
+        if (Array.isArray(learned)) learnedCount = learned.reduce((acc,g)=>acc+g.items.length,0);
+        sidebarProgress.textContent = learnedCount;
+        sidebarTotalWords.textContent = totalWords;
+        sidebarStreak.textContent = streak;
+      }
+      // User info
+      if (sidebarUserInfo && sidebarUserEmail && sidebarLoginBtn && sidebarLogoutBtn) {
+        // Try to get Firebase user
+        let userEmail = '';
+        if (window.auth && window.auth.currentUser && window.auth.currentUser.email) {
+          userEmail = window.auth.currentUser.email;
+        }
+        if (userEmail) {
+          sidebarUserInfo.style.display = 'flex';
+          sidebarUserEmail.textContent = userEmail;
+          sidebarLoginBtn.style.display = 'none';
+          sidebarLogoutBtn.style.display = 'block';
+        } else {
+          sidebarUserInfo.style.display = 'none';
+          sidebarUserEmail.textContent = '';
+          sidebarLoginBtn.style.display = 'block';
+          sidebarLogoutBtn.style.display = 'none';
+        }
+      }
+    }
+    // Open login modal from sidebar
+    if (sidebarLoginBtn) {
+      sidebarLoginBtn.onclick = function() {
+        closeSidebar();
+        // Open login modal if available
+        const openAuthBtn = document.getElementById('openAuth');
+        if (openAuthBtn) openAuthBtn.click();
+      };
+    }
+    if (sidebarLogoutBtn) {
+      sidebarLogoutBtn.onclick = function() {
+        closeSidebar();
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.click();
+      };
+    }
+    // Update sidebar info on page load and when switching tabs
+    document.addEventListener('DOMContentLoaded', updateSidebarInfo);
+    setInterval(updateSidebarInfo, 1000);
+  </script>
   <!-- <CHANGE> Updated toast notification structure -->
   <div id="toast">
     <div class="toast-icon" id="toastIcon"></div>
@@ -719,11 +955,23 @@
         <span id="closeAuth" style="position:absolute;top:8px;right:16px;font-size:28px;cursor:pointer;color:#fff">&times;</span>
         <h2 style="margin-top:0">Đăng nhập / Đăng ký</h2>
         <form id="authForm">
-          <input id="authEmail" type="email" placeholder="Email" required style="width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb" />
-          <input id="authPassword" type="password" placeholder="Mật khẩu" required minlength="6" style="width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb" />
+          <input id="authEmail" type="email" placeholder="Email" required style="width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb" autocomplete="username" />
+          <span style="position:relative;display:block;margin-bottom:10px">
+            <input id="authPassword" type="password" placeholder="Mật khẩu" required minlength="6" style="width:100%;padding:10px 38px 10px 10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb" autocomplete="current-password" />
+            <span id="togglePassword" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);cursor:pointer;font-size:18px;color:#94a3b8;user-select:none;">👁️</span>
+          </span>
+          <span id="confirmPasswordWrap" style="position:relative;display:none;margin-bottom:10px">
+            <input id="authConfirmPassword" type="password" placeholder="Xác nhận mật khẩu" minlength="6" style="width:100%;padding:10px 38px 10px 10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e5e7eb" autocomplete="new-password" />
+            <span id="toggleConfirmPassword" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);cursor:pointer;font-size:18px;color:#94a3b8;user-select:none;">👁️</span>
+            <div id="confirmPasswordError" style="color:#ef4444;font-size:13px;margin-top:4px;display:none"></div>
+          </span>
+          <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="rememberMe" style="accent-color:#3b82f6;width:16px;height:16px" />
+            <label for="rememberMe" style="color:#e5e7eb;font-size:14px;cursor:pointer;user-select:none">Lưu tài khoản</label>
+          </div>
           <button type="submit" class="btn primary" style="width:100%;margin-bottom:8px">Đăng nhập</button>
-  </form>
-  <button id="googleSignIn" type="button" class="btn" style="width:100%;background:#fff;color:#222;border:1px solid #ccc;margin-bottom:8px"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="height:18px;vertical-align:middle;margin-right:8px">Đăng nhập với Google</button>
+        </form>
+        <button id="googleSignIn" type="button" class="btn" style="width:100%;background:#fff;color:#222;border:1px solid #ccc;margin-bottom:8px"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="height:18px;vertical-align:middle;margin-right:8px">Đăng nhập với Google</button>
         </form>
         <div style="text-align:center;margin-bottom:8px">
           <span id="toggleAuthMode" style="color:#60a5fa;cursor:pointer;font-size:14px">Chưa có tài khoản? Đăng ký</span>
@@ -731,12 +979,11 @@
         <div id="authError" style="color:#ef4444;text-align:center;font-size:14px;min-height:20px"></div>
       </div>
     </div>
-    <div class="container">
+  <button id="openAuth" class="hidden" style="display:none"></button>
+  <div class="container">
       <h1>Mỗi ngày 5 từ tiếng Anh mới</h1>
       <div class="row">
         <div class="pill" id="todayLabel">Hôm nay: —</div>
-        <div class="pill">Tiến độ: <span id="progress">0</span> / <span id="totalWords">0</span> từ</div>
-        <div class="pill">Ngày liên tiếp: <span id="streak">0</span> 🔥</div>
       </div>
 
 
@@ -744,13 +991,11 @@
           <button class="tab active" data-tab="lesson">📚 Bài học hôm nay</button>
           <button class="tab" data-tab="practice">🧠 Luyện tập</button>
           <button class="tab" data-tab="learned">✅ Từ đã học</button>
-          <button id="openAuth" class="btn ghost right" style="margin-left:auto">Đăng nhập</button>
-          <button id="logoutBtn" class="btn warn right" style="margin-left:8px;display:none">Đăng xuất</button>
         </nav>
     <!-- LESSON TAB -->
     <section id="tab-lesson">
       <div class="toolbar">
-        <button id="finishDay" class="btn success">Đánh dấu hoàn thành ngày học</button>
+        <button id="finishDay" class="btn success" style="display:none">Đánh dấu hoàn thành ngày học</button>
         <button id="resetToday" class="btn warn">Chọn lại 5 từ hôm nay</button>
         <span class="muted right">Mẹo: Bấm vào "Hiện nghĩa" để tự kiểm tra trước khi xem đáp án.</span>
       </div>
@@ -795,6 +1040,7 @@
     };
     firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  window.auth = auth;
   const db = firebase.firestore();
     // Firestore helpers
     async function saveLearnedToFirestore(uid, learned) {
@@ -814,22 +1060,50 @@
     // UI logic cho popup đăng nhập/đăng ký
     // Popup đăng nhập/đăng ký, Google sign-in, logout, toast
     (function() {
-      const authModal = document.getElementById('authModal');
-      const authModalContent = document.getElementById('authModalContent');
-      const openAuthBtn = document.getElementById('openAuth');
-      const logoutBtn = document.getElementById('logoutBtn');
-      const closeAuthBtn = document.getElementById('closeAuth');
-      const authForm = document.getElementById('authForm');
-      const authEmail = document.getElementById('authEmail');
-      const authPassword = document.getElementById('authPassword');
-      const toggleAuthMode = document.getElementById('toggleAuthMode');
-      const authError = document.getElementById('authError');
-      const googleSignIn = document.getElementById('googleSignIn');
-      const toast = document.getElementById('toast');
-      const toastIcon = document.getElementById('toastIcon');
-      const toastTitle = document.getElementById('toastTitle');
-      const toastMessage = document.getElementById('toastMessage');
-      let isSignUp = false;
+  // Xử lý ẩn/hiện mật khẩu
+  document.getElementById('togglePassword').onclick = function() {
+    const pw = document.getElementById('authPassword');
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      this.textContent = '🙈';
+    } else {
+      pw.type = 'password';
+      this.textContent = '👁️';
+    }
+  };
+  // Xử lý ẩn/hiện xác nhận mật khẩu
+  document.getElementById('toggleConfirmPassword').onclick = function() {
+    const pw = document.getElementById('authConfirmPassword');
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      this.textContent = '🙈';
+    } else {
+      pw.type = 'password';
+      this.textContent = '👁️';
+    }
+  };
+  // Tự động điền email và mật khẩu nếu đã lưu
+  const savedAccount = JSON.parse(localStorage.getItem('md5t_saved_account') || 'null');
+  if (savedAccount && savedAccount.email && savedAccount.password) {
+    document.getElementById('authEmail').value = savedAccount.email;
+    document.getElementById('authPassword').value = savedAccount.password;
+    document.getElementById('rememberMe').checked = true;
+  }
+  const authModal = document.getElementById('authModal');
+  const authModalContent = document.getElementById('authModalContent');
+  const openAuthBtn = document.getElementById('openAuth');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const closeAuthBtn = document.getElementById('closeAuth');
+  const authForm = document.getElementById('authForm');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const toggleAuthMode = document.getElementById('toggleAuthMode');
+  const authError = document.getElementById('authError');
+  const googleSignIn = document.getElementById('googleSignIn');
+  const confirmPasswordWrap = document.getElementById('confirmPasswordWrap');
+  const authConfirmPassword = document.getElementById('authConfirmPassword');
+  const confirmPasswordError = document.getElementById('confirmPasswordError');
+  let isSignUp = false;
 
       function showModal() {
         authModal.style.display = 'flex';
@@ -839,64 +1113,82 @@
         authModal.style.display = 'none';
         authModal.classList.add('hidden');
       }
-      
-      // <CHANGE> Enhanced toast function with modern design and animations
-      function showToast(title, message, type = 'info') {
-        // Set icon and styling based on type
-        toastIcon.className = `toast-icon ${type}`;
-        switch(type) {
-          case 'success':
-            toastIcon.innerHTML = '✓';
-            break;
-          case 'error':
-            toastIcon.innerHTML = '!';
-            break;
-          case 'warning':
-            toastIcon.innerHTML = '⚠';
-            break;
-          default:
-            toastIcon.innerHTML = 'i';
-        }
-        
-        toastTitle.textContent = title;
-        toastMessage.textContent = message;
-        
-        // Show toast with animation
-        toast.classList.add('show');
-        
-        // Auto hide after 4 seconds
-        setTimeout(() => {
-          toast.classList.remove('show');
-        }, 4000);
-      }
+// Toast notification logic (toàn cục)
+const toast = document.getElementById('toast');
+const toastIcon = document.getElementById('toastIcon');
+const toastTitle = document.getElementById('toastTitle');
+const toastMessage = document.getElementById('toastMessage');
+function showToast(title, message, type = 'info') {
+  toastIcon.className = `toast-icon ${type}`;
+  switch(type) {
+    case 'success': toastIcon.innerHTML = '✓'; break;
+    case 'error': toastIcon.innerHTML = '!'; break;
+    case 'warning': toastIcon.innerHTML = '⚠'; break;
+    default: toastIcon.innerHTML = 'i';
+  }
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); }, 8000);
+}
+window.showToast = showToast;
 
-      openAuthBtn.onclick = () => {
-        showModal();
-        authError.textContent = '';
-        isSignUp = false;
-        toggleAuthMode.textContent = 'Chưa có tài khoản? Đăng ký';
-        authForm.querySelector('button[type="submit"]').textContent = 'Đăng nhập';
-      };
-      closeAuthBtn.onclick = hideModal;
-      authModal.onclick = function(e) {
-        if (e.target === authModal) hideModal();
-      };
-      toggleAuthMode.onclick = () => {
-        isSignUp = !isSignUp;
-        if(isSignUp) {
-          toggleAuthMode.textContent = 'Đã có tài khoản? Đăng nhập';       
-          authForm.querySelector('button[type="submit"]').textContent = 'Đăng ký';
-        } else {
-          toggleAuthMode.textContent = 'Chưa có tài khoản? Đăng ký';
+      if (openAuthBtn) {
+        openAuthBtn.onclick = () => {
+          showModal();
+          authError.textContent = '';
+          isSignUp = false;
+          if (toggleAuthMode) toggleAuthMode.textContent = 'Chưa có tài khoản? Đăng ký';
           authForm.querySelector('button[type="submit"]').textContent = 'Đăng nhập';
-        }
-        authError.textContent = '';
-      };
+          confirmPasswordWrap.style.display = 'none';
+          confirmPasswordError.style.display = 'none';
+          authConfirmPassword.value = '';
+        };
+      }
+      if (closeAuthBtn) closeAuthBtn.onclick = hideModal;
+      if (authModal) {
+        authModal.onclick = function(e) {
+          if (e.target === authModal) hideModal();
+        };
+      }
+      if (toggleAuthMode) {
+        toggleAuthMode.onclick = () => {
+          isSignUp = !isSignUp;
+          if(isSignUp) {
+            toggleAuthMode.textContent = 'Đã có tài khoản? Đăng nhập';       
+            authForm.querySelector('button[type="submit"]').textContent = 'Đăng ký';
+            confirmPasswordWrap.style.display = 'block';
+          } else {
+            toggleAuthMode.textContent = 'Chưa có tài khoản? Đăng ký';
+            authForm.querySelector('button[type="submit"]').textContent = 'Đăng nhập';
+            confirmPasswordWrap.style.display = 'none';
+            confirmPasswordError.style.display = 'none';
+            authConfirmPassword.value = '';
+          }
+          authError.textContent = '';
+        };
+      }
       authForm.onsubmit = async e => {
         e.preventDefault();
         authError.textContent = '';
+        confirmPasswordError.style.display = 'none';
         const email = authEmail.value.trim();
         const pass = authPassword.value;
+        const remember = document.getElementById('rememberMe').checked;
+        if (isSignUp) {
+          // Kiểm tra xác nhận mật khẩu
+          if (authConfirmPassword.value !== pass) {
+            confirmPasswordError.textContent = 'Mật khẩu xác nhận không khớp.';
+            confirmPasswordError.style.display = 'block';
+            authConfirmPassword.focus();
+            return;
+          }
+        }
+        if (remember) {
+          localStorage.setItem('md5t_saved_account', JSON.stringify({ email, password: pass }));
+        } else {
+          localStorage.removeItem('md5t_saved_account');
+        }
         try {
           if(isSignUp) {
             await auth.createUserWithEmailAndPassword(email, pass);
@@ -907,8 +1199,12 @@
           }
           hideModal();
         } catch(err) {
-          authError.textContent = err.message.replace('Firebase: ', '');
-          showToast('Lỗi', err.message.replace('Firebase: ', ''), 'error');
+          let msg = err.message.replace('Firebase: ', '');
+          if (err.code === 'auth/invalid-credential' || msg.includes('auth/invalid-credential')) {
+            msg = 'Bạn đã nhập sai tài khoản hoặc mật khẩu.';
+          }
+          authError.textContent = msg;
+          showToast('Lỗi', msg, 'error');
         }
       };
       // Google sign-in
@@ -953,29 +1249,43 @@
         };
       }
 
-      logoutBtn.onclick = async function() {
-        showConfirmLogout(async () => {
-          await auth.signOut();
-          showToast('Đăng xuất thành công!', 'success');
-        });
-      };
+      if (logoutBtn) {
+        logoutBtn.onclick = async function() {
+          showConfirmLogout(async () => {
+            await auth.signOut();
+            showToast('Đăng xuất thành công!', 'success');
+          });
+        };
+      }
       // Hiển thị nút đăng nhập/đăng xuất phù hợp
       // Khi trạng thái đăng nhập thay đổi, load dữ liệu Firestore nếu có
-      auth.onAuthStateChanged(async user => {
-        if(user) {
-          openAuthBtn.style.display = 'none';
-          logoutBtn.style.display = 'inline-block';
-          // Load "learned" từ Firestore
-          const learned = await loadLearnedFromFirestore(user.uid);
-          if (learned) {
-            localStorage.setItem(LS_KEYS.learned, JSON.stringify(learned));
-            renderLearned();
+      if (typeof auth !== 'undefined' && auth && typeof auth.onAuthStateChanged === 'function') {
+        auth.onAuthStateChanged(async user => {
+          const userInfo = document.getElementById('userInfo');
+          const openAuthBtn = document.getElementById('openAuth');
+          const logoutBtn = document.getElementById('logoutBtn');
+          if(user) {
+            if (openAuthBtn) openAuthBtn.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'inline-block';
+            if (userInfo) {
+              userInfo.style.display = 'inline-block';
+              userInfo.textContent = user.email ? `👤 ${user.email}` : '';
+            }
+            // Load "learned" từ Firestore
+            const learned = await loadLearnedFromFirestore(user.uid);
+            if (learned) {
+              localStorage.setItem(LS_KEYS.learned, JSON.stringify(learned));
+              renderLearned();
+            }
+          } else {
+            if (openAuthBtn) openAuthBtn.style.display = 'inline-block';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'none';
           }
-        } else {
-          openAuthBtn.style.display = 'inline-block';
-          logoutBtn.style.display = 'none';
-        }
-      });
+          // Luôn cập nhật lại thông tin sidebar khi trạng thái đăng nhập thay đổi
+          if (typeof updateSidebarInfo === 'function') updateSidebarInfo();
+        });
+      }
     })();
     /******************** Data ********************/
     // Load corpus từ file ngoài (corpus.json)
@@ -1063,8 +1373,9 @@
     /******************** Render Lesson ********************/
     function renderLesson(){
       const set = ensureTodaySet();
-      $('#todayLabel').textContent = 'Hôm nay: ' + set.date;
-      $('#totalWords').textContent = CORPUS.length;
+  $('#todayLabel').textContent = 'Hôm nay: ' + set.date;
+  const totalWordsEl = document.getElementById('totalWords');
+  if (totalWordsEl) totalWordsEl.textContent = CORPUS.length;
 
       const frag = document.createDocumentFragment();
       set.items.forEach((idx, order)=>{
@@ -1095,11 +1406,13 @@
         e.currentTarget.remove();
       }));
 
-      // progress
-      const learned = load(LS_KEYS.learned, []);
-      const learnedCount = learned.reduce((acc,g)=>acc+g.items.length,0);
-      $('#progress').textContent = learnedCount;
-      $('#streak').textContent = load(LS_KEYS.streak, 0);
+  // progress
+  const learned = load(LS_KEYS.learned, []);
+  const learnedCount = learned.reduce((acc,g)=>acc+g.items.length,0);
+  const progressEl = document.getElementById('progress');
+  if (progressEl) progressEl.textContent = learnedCount;
+  const streakEl = document.getElementById('streak');
+  if (streakEl) streakEl.textContent = load(LS_KEYS.streak, 0);
     }
 
     /******************** Finish Day ********************/
@@ -1115,10 +1428,10 @@
         // Nếu đã đăng nhập thì lưu lên Firestore
         if(auth.currentUser) await saveLearnedToFirestore(auth.currentUser.uid, learned);
         // <CHANGE> Updated to use new toast system
-        showToast('Hoàn thành!', `Đã lưu 5 từ của ngày ${set.date} vào danh sách đã học.`, 'success');
+  showToast('Hoàn thành!', `Đã lưu 5 từ của ngày ${set.date} vào danh sách đã học.`, 'success');
       } else {
         // <CHANGE> Updated to use new toast system
-        showToast('Thông báo', 'Ngày hôm nay đã được lưu trước đó.', 'warning');
+  showToast('Thông báo', 'Ngày hôm nay đã được lưu trước đó.', 'warning');
       }
       renderLesson(); renderLearned();
     }
@@ -1193,10 +1506,13 @@
             else { btn.classList.add('wrong'); [...choices.children].forEach(c=>{ if(c.textContent===q.correct) c.classList.add('correct'); }); }
             if(answered===questions.length){
               const res = document.createElement('div'); res.style.marginTop='14px';
-              res.innerHTML = `<div class="card">✅ Hoàn thành! Điểm: <strong>${score}/${questions.length}</strong> — ${(score*100/questions.length).toFixed(0)}%</div>`;
+              res.innerHTML = `<div class=\"card\">✅ Hoàn thành! Điểm: <strong>${score}/${questions.length}</strong> — ${(score*100/questions.length).toFixed(0)}%</div>`;
               quizRoot.appendChild(res);
-              // <CHANGE> Added toast notification for quiz completion
-              showToast('Hoàn thành bài tập!', `Bạn đạt ${score}/${questions.length} điểm (${(score*100/questions.length).toFixed(0)}%)`, 'success');
+              if(score === questions.length) {
+                document.getElementById('finishDay').style.display = 'inline-block';
+              } else {
+                document.getElementById('finishDay').style.display = 'none';
+              }
             }
           });
           choices.appendChild(btn);
@@ -1214,7 +1530,21 @@
     }
 
     $$('.tab').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
-    $('#finishDay').addEventListener('click', finishDay);
+    $('#finishDay').addEventListener('click', async function() {
+      // Kiểm tra lại điểm số cuối cùng
+      const quizCard = document.querySelector('#quiz .card');
+      if(quizCard && quizCard.textContent.includes('Điểm:')) {
+        const match = quizCard.textContent.match(/Điểm: (\d+)\/(\d+)/);
+        if(match && match[1] !== match[2]) {
+          showToast('Bạn phải hoàn thành đúng 5/5 thì mới được đánh dấu hoàn thành ngày học', 'error');
+         
+          return;
+        }
+      }
+  await finishDay();
+  showToast('Đánh dấu hoàn thành ngày học thành công!', '', 'success');
+  setTimeout(()=>{ location.reload(); }, 1500);
+    });
     $('#resetToday').addEventListener('click', ()=>{
       if(confirm('Chọn lại 5 từ hôm nay? (Không ảnh hưởng đến các ngày đã lưu)')){
         localStorage.removeItem(LS_KEYS.todaySet);
@@ -1227,7 +1557,19 @@
     $('#clearAll').addEventListener('click', ()=>{
       if(confirm('XÓA TẤT CẢ dữ liệu (bài học, tiến độ, streak)?')){
         Object.values(LS_KEYS).forEach(k=>localStorage.removeItem(k));
-        location.reload();
+        // Nếu đã đăng nhập thì xóa trường 'learned' trong Firestore, chờ thao tác xong mới reload
+        const reloadPage = ()=>{
+          showToast('Đã xóa tất cả dữ liệu!', '', 'success');
+          setTimeout(()=>{ location.reload(); }, 1500);
+        };
+        if(typeof auth !== 'undefined' && auth.currentUser && typeof firebase !== 'undefined'){
+          db.collection('users').doc(auth.currentUser.uid)
+            .update({ learned: firebase.firestore.FieldValue.delete() })
+            .then(reloadPage)
+            .catch(reloadPage);
+        } else {
+          reloadPage();
+        }
       }
     });
     $('#startQuiz').addEventListener('click', startQuiz);

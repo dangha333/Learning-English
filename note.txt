@@ -1,0 +1,2 @@
+Tool tự động dịch tiếng anh
+chạy python translate_examples.py

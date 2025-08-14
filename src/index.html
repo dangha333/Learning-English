@@ -1,0 +1,15 @@
+ $('#finishDay').addEventListener('click', async function() {
+      // Kiểm tra lại điểm số cuối cùng
+      const quizCard = document.querySelector('#quiz .card');
+      if(quizCard && quizCard.textContent.includes('Điểm:')) {
+        const match = quizCard.textContent.match(/Điểm: (\\d+)\\/(\\d+)/);
+        if(match && match[1] !== match[2]) {
+          toastModule.showToast('Bạn phải hoàn thành đúng 5/5 thì mới được đánh dấu hoàn thành ngày học', 'error');
+          return;
+        }
+      }
+  await toastModule.finishDay();
+   toastModule.showToast('Đánh dấu hoàn thành ngày học thành công!', '', 'success');
+  setTimeout(()=>{ location.reload(); }, 1200);
+  this.style.display = 'none';
+    });
