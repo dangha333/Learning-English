@@ -71,12 +71,648 @@
     .right{margin-left:auto}
     .hidden{display:none}
     input[type="search"]{background:#0b1220; border:1px solid #334155; color:#e5e7eb; border-radius:10px; padding:10px; min-width:220px}
+
+    /* <CHANGE> Modern toast notification styling */
+    #toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 2000;
+      min-width: 320px;
+      max-width: 400px;
+      background: rgba(40, 40, 40, 0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      transform: translateX(100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #toast.show {
+      display: flex;
+      transform: translateX(0);
+    }
+
+    .toast-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .toast-icon.success {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+
+    .toast-icon.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .toast-icon.warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .toast-icon.info {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .toast-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .toast-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+      line-height: 1.3;
+    }
+
+    .toast-message {
+      font-size: 14px;
+      color: #d1d5db;
+      margin: 0;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    @media (max-width: 480px) {
+      #toast {
+        left: 16px;
+        right: 16px;
+        min-width: auto;
+        max-width: none;
+      }
+    }
+    :root{
+      --bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card: rgba(30, 41, 59, 0.8);
+      --card-hover: rgba(51, 65, 85, 0.9);
+      --text: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #22c55e;
+      --border: rgba(148, 163, 184, 0.2);
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Enhanced Header */
+    header {
+      padding: 2rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .pill {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .pill:hover {
+      background: rgba(51, 65, 85, 0.8);
+      transform: translateY(-2px);
+    }
+
+    /* Enhanced Navigation */
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.6);
+      color: var(--text-secondary);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .tab:hover::before {
+      left: 100%;
+    }
+
+    .tab:hover {
+      background: var(--card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-color: var(--primary);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .right {
+      margin-left: auto;
+    }
+
+    main {
+      padding: 2rem 0 3rem;
+    }
+
+    /* Enhanced Cards */
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      background: var(--card-hover);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .phonetic {
+      color: #a5b4fc;
+      font-style: italic;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .meaning {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Enhanced Buttons */
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: rgba(30, 41, 59, 0.8);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      border: none;
+      color: white;
+    }
+
+    .btn.success {
+      background: linear-gradient(135deg, var(--success), var(--accent-hover));
+      border: none;
+      color: white;
+    }
+
+    .btn.warn {
+      background: linear-gradient(135deg, var(--warning), #d97706);
+      border: none;
+      color: white;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border-color: var(--border);
+    }
+
+    /* Enhanced Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: rgba(30, 41, 59, 0.4);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+
+    /* Enhanced Lists */
+    .list {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    details:hover {
+      background: var(--card-hover);
+      box-shadow: var(--shadow);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0.5rem 0;
+      color: var(--text);
+      transition: color 0.3s ease;
+    }
+
+    summary:hover {
+      color: var(--primary);
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 0.5rem 0.5rem 0 0;
+      padding: 0.5rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      font-size: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .tag:hover {
+      background: var(--card-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Enhanced Quiz */
+    .quiz {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .choices {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .choice {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .choice:hover {
+      background: var(--card-hover);
+      border-color: var(--primary);
+      transform: translateX(5px);
+    }
+
+    .choice.correct {
+      border-color: var(--success);
+      background: rgba(34, 197, 94, 0.2);
+    }
+
+    .choice.wrong {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Enhanced Modal */
+    #authModal {
+      backdrop-filter: blur(10px);
+    }
+
+    #authModalContent {
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(20px);
+    }
+
+    /* Enhanced Form Elements */
+    input[type="search"], input[type="email"], input[type="password"] {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      min-width: 250px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    input[type="search"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Enhanced Toast */
+    #toast {
+      background: var(--card) !important;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.3);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Confirm popup styles */
+    #logoutConfirmPopup {
+      position: fixed;
+      z-index: 3000;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      display: none;
+    }
+    #logoutConfirmPopup .confirm-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.35);
+    }
+    #logoutConfirmPopup .confirm-box {
+      position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      background: #fff;
+      color: #222;
+      border-radius: 14px;
+      min-width: 320px;
+      box-shadow: 0 8px 32px #0005;
+      padding: 32px 28px 22px 28px;
+      text-align: center;
+      animation: popupIn .25s;
+    }
+    #logoutConfirmPopup .confirm-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    #logoutConfirmPopup .confirm-msg {
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+    #logoutConfirmPopup .confirm-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+    @keyframes popupIn {
+      from { opacity: 0; transform: translate(-50%,-60%) scale(0.95); }
+      to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 0.5rem;
+      }
+      
+      .lesson-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .toolbar .btn {
+        width: 100%;
+        text-align: center;
+      }
+      
+      nav {
+        flex-direction: column;
+      }
+      
+      .tab {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    /* Animation for page load */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card, .toolbar, details {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .card:nth-child(3) { animation-delay: 0.2s; }
+    .card:nth-child(4) { animation-delay: 0.3s; }
+    .card:nth-child(5) { animation-delay: 0.4s; }
+
   </style>
 </head>
 <body>
   <header>
-  <!-- Toast notification -->
-  <div id="toast" style="position:fixed;top:24px;right:24px;z-index:2000;min-width:180px;max-width:90vw;padding:14px 24px;background:#222;border-radius:8px;color:#fff;font-size:16px;box-shadow:0 4px 24px #0007;display:none;align-items:center;gap:8px"></div>
+  <!-- <CHANGE> Updated toast notification structure -->
+  <div id="toast">
+    <div class="toast-icon" id="toastIcon"></div>
+    <div class="toast-content">
+      <div class="toast-title" id="toastTitle"></div>
+      <div class="toast-message" id="toastMessage"></div>
+    </div>
+  </div>
     <!-- Auth Modal (new, đơn giản) -->
     <div id="authModal" class="hidden" style="position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
       <div id="authModalContent" style="background:#1e293b;padding:32px 24px;border-radius:16px;min-width:320px;max-width:90vw;box-shadow:0 8px 32px #000a;position:relative;">
@@ -140,7 +776,7 @@
       <div id="learnedList" class="list"></div>
     </section>
 
-    <div class="footer">Dữ liệu lưu trên trình duyệt (localStorage). Từ vựng mẫu có sẵn, bạn có thể mở rộng trong mã nguồn.</div>
+    <div class="footer">Code by Dang Thanh Ha</div>
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -190,6 +826,9 @@
       const authError = document.getElementById('authError');
       const googleSignIn = document.getElementById('googleSignIn');
       const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMessage = document.getElementById('toastMessage');
       let isSignUp = false;
 
       function showModal() {
@@ -200,12 +839,37 @@
         authModal.style.display = 'none';
         authModal.classList.add('hidden');
       }
-      function showToast(msg, color) {
-        toast.textContent = msg;
-        toast.style.display = 'flex';
-        toast.style.background = color || '#222';
-        setTimeout(()=>{ toast.style.display = 'none'; }, 2200);
+      
+      // <CHANGE> Enhanced toast function with modern design and animations
+      function showToast(title, message, type = 'info') {
+        // Set icon and styling based on type
+        toastIcon.className = `toast-icon ${type}`;
+        switch(type) {
+          case 'success':
+            toastIcon.innerHTML = '✓';
+            break;
+          case 'error':
+            toastIcon.innerHTML = '!';
+            break;
+          case 'warning':
+            toastIcon.innerHTML = '⚠';
+            break;
+          default:
+            toastIcon.innerHTML = 'i';
+        }
+        
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+        
+        // Show toast with animation
+        toast.classList.add('show');
+        
+        // Auto hide after 4 seconds
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 4000);
       }
+
       openAuthBtn.onclick = () => {
         showModal();
         authError.textContent = '';
@@ -220,7 +884,7 @@
       toggleAuthMode.onclick = () => {
         isSignUp = !isSignUp;
         if(isSignUp) {
-          toggleAuthMode.textContent = 'Đã có tài khoản? Đăng nhập';
+          toggleAuthMode.textContent = 'Đã có tài khoản? Đăng nhập';       
           authForm.querySelector('button[type="submit"]').textContent = 'Đăng ký';
         } else {
           toggleAuthMode.textContent = 'Chưa có tài khoản? Đăng ký';
@@ -236,14 +900,15 @@
         try {
           if(isSignUp) {
             await auth.createUserWithEmailAndPassword(email, pass);
-            showToast('Đăng ký thành công!', '#22c55e');
+            showToast('Thành công', 'Đăng ký tài khoản thành công!', 'success');
           } else {
             await auth.signInWithEmailAndPassword(email, pass);
-            showToast('Đăng nhập thành công!', '#22c55e');
+            showToast('Thành công', 'Đăng nhập thành công!', 'success');
           }
           hideModal();
         } catch(err) {
           authError.textContent = err.message.replace('Firebase: ', '');
+          showToast('Lỗi', err.message.replace('Firebase: ', ''), 'error');
         }
       };
       // Google sign-in
@@ -251,16 +916,48 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         try {
           await auth.signInWithPopup(provider);
-          showToast('Đăng nhập Google thành công!', '#22c55e');
+          showToast('Thành công', 'Đăng nhập Google thành công!', 'success');
           hideModal();
         } catch(err) {
           authError.textContent = err.message.replace('Firebase: ', '');
+          showToast('Lỗi', err.message.replace('Firebase: ', ''), 'error');
         }
       };
       // Logout
+      // Custom confirm popup
+      function showConfirmLogout(onConfirm) {
+        let popup = document.getElementById('logoutConfirmPopup');
+        if (!popup) {
+          popup = document.createElement('div');
+          popup.id = 'logoutConfirmPopup';
+          popup.innerHTML = `
+            <div class="confirm-overlay"></div>
+            <div class="confirm-box">
+              <div class="confirm-title">Xác nhận đăng xuất</div>
+              <div class="confirm-msg">Bạn có chắc chắn muốn đăng xuất không?</div>
+              <div class="confirm-actions">
+                <button id="confirmLogoutBtn" class="btn primary">Đồng ý</button>
+                <button id="cancelLogoutBtn" class="btn warn">Hủy</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(popup);
+        }
+        popup.style.display = 'block';
+        popup.querySelector('#confirmLogoutBtn').onclick = () => {
+          popup.style.display = 'none';
+          onConfirm();
+        };
+        popup.querySelector('#cancelLogoutBtn').onclick = () => {
+          popup.style.display = 'none';
+        };
+      }
+
       logoutBtn.onclick = async function() {
-        await auth.signOut();
-        showToast('Đăng xuất thành công!', '#60a5fa');
+        showConfirmLogout(async () => {
+          await auth.signOut();
+          showToast('Đăng xuất thành công!', 'success');
+        });
       };
       // Hiển thị nút đăng nhập/đăng xuất phù hợp
       // Khi trạng thái đăng nhập thay đổi, load dữ liệu Firestore nếu có
@@ -281,61 +978,22 @@
       });
     })();
     /******************** Data ********************/
-    // Kho từ mẫu: {word, phonetic, vi, hint}
-    const CORPUS = [
-      {w:'abandon', p:'/əˈbændən/', v:'từ bỏ; bỏ rơi', h:'They had to abandon the car.'},
-      {w:'ability', p:'/əˈbɪləti/', v:'khả năng', h:'Her ability is impressive.'},
-      {w:'accurate', p:'/ˈækjərət/', v:'chính xác', h:'An accurate report.'},
-      {w:'achieve', p:'/əˈtʃiːv/', v:'đạt được', h:'Achieve your goals.'},
-      {w:'active', p:'/ˈæktɪv/', v:'năng động; tích cực', h:'An active lifestyle.'},
-      {w:'adapt', p:'/əˈdæpt/', v:'thích nghi', h:'Adapt to changes.'},
-      {w:'advantage', p:'/ədˈvɑːntɪdʒ/', v:'lợi thế', h:'Have an advantage.'},
-      {w:'afford', p:'/əˈfɔːd/', v:'có đủ khả năng (chi trả)', h:'Can you afford it?'},
-      {w:'ambition', p:'/æmˈbɪʃn/', v:'tham vọng', h:'Great ambition.'},
-      {w:'ancient', p:'/ˈeɪnʃənt/', v:'cổ xưa', h:'Ancient city.'},
-      {w:'approve', p:'/əˈpruːv/', v:'tán thành; phê duyệt', h:'Approve a plan.'},
-      {w:'assist', p:'/əˈsɪst/', v:'hỗ trợ', h:'Assist a customer.'},
-      {w:'attempt', p:'/əˈtempt/', v:'cố gắng; thử', h:'Attempt to fix it.'},
-      {w:'attract', p:'/əˈtrækt/', v:'thu hút', h:'Attract attention.'},
-      {w:'balance', p:'/ˈbæləns/', v:'cân bằng', h:'Work-life balance.'},
-      {w:'behave', p:'/bɪˈheɪv/', v:'cư xử', h:'Behave well.'},
-      {w:'benefit', p:'/ˈbenɪfɪt/', v:'lợi ích; có lợi', h:'Mutual benefit.'},
-      {w:'borrow', p:'/ˈbɒrəʊ/', v:'mượn', h:'Borrow a book.'},
-      {w:'brief', p:'/briːf/', v:'ngắn gọn', h:'A brief meeting.'},
-      {w:'capable', p:'/ˈkeɪpəbl/', v:'có khả năng', h:'Capable team.'},
-      {w:'careful', p:'/ˈkeəfl/', v:'cẩn thận', h:'Be careful.'},
-      {w:'challenge', p:'/ˈtʃælɪndʒ/', v:'thử thách', h:'Face a challenge.'},
-      {w:'change', p:'/tʃeɪndʒ/', v:'thay đổi', h:'Change your mind.'},
-      {w:'clarify', p:'/ˈklærɪfaɪ/', v:'làm rõ', h:'Clarify a point.'},
-      {w:'combine', p:'/kəmˈbaɪn/', v:'kết hợp', h:'Combine ideas.'},
-      {w:'commit', p:'/kəˈmɪt/', v:'cam kết; phạm', h:'Commit to learning.'},
-      {w:'compare', p:'/kəmˈpeə(r)/', v:'so sánh', h:'Compare prices.'},
-      {w:'complete', p:'/kəmˈpliːt/', v:'hoàn thành', h:'Complete a task.'},
-      {w:'confident', p:'/ˈkɒnfɪdənt/', v:'tự tin', h:'Feel confident.'},
-      {w:'consider', p:'/kənˈsɪdə(r)/', v:'cân nhắc; xem xét', h:'Consider options.'},
-      {w:'create', p:'/kriˈeɪt/', v:'tạo ra', h:'Create content.'},
-      {w:'curious', p:'/ˈkjʊəriəs/', v:'tò mò', h:'A curious child.'},
-      {w:'decrease', p:'/dɪˈkriːs/', v:'giảm', h:'Decrease costs.'},
-      {w:'deliver', p:'/dɪˈlɪvə(r)/', v:'giao; trình bày', h:'Deliver a speech.'},
-      {w:'depend', p:'/dɪˈpend/', v:'phụ thuộc', h:'Depend on you.'},
-      {w:'design', p:'/dɪˈzaɪn/', v:'thiết kế', h:'Design a logo.'},
-      {w:'develop', p:'/dɪˈveləp/', v:'phát triển', h:'Develop skills.'},
-      {w:'education', p:'/ˌedʒuˈkeɪʃn/', v:'giáo dục', h:'Education matters.'},
-      {w:'effort', p:'/ˈefət/', v:'nỗ lực', h:'Make an effort.'},
-      {w:'efficient', p:'/ɪˈfɪʃnt/', v:'hiệu quả', h:'Efficient system.'},
-      {w:'encourage', p:'/ɪnˈkʌrɪdʒ/', v:'khuyến khích', h:'Encourage learning.'},
-      {w:'energy', p:'/ˈenədʒi/', v:'năng lượng', h:'Save energy.'},
-      {w:'engineer', p:'/ˌendʒɪˈnɪə(r)/', v:'kỹ sư', h:'Software engineer.'},
-      {w:'enjoy', p:'/ɪnˈdʒɔɪ/', v:'thưởng thức; thích', h:'Enjoy the show.'},
-      {w:'environment', p:'/ɪnˈvaɪrənmənt/', v:'môi trường', h:'Protect the environment.'},
-      {w:'evidence', p:'/ˈevɪdəns/', v:'bằng chứng', h:'Strong evidence.'},
-      {w:'expand', p:'/ɪkˈspænd/', v:'mở rộng', h:'Expand the team.'},
-      {w:'experience', p:'/ɪkˈspɪəriəns/', v:'kinh nghiệm; trải nghiệm', h:'Work experience.'},
-      {w:'explain', p:'/ɪkˈspleɪn/', v:'giải thích', h:'Explain clearly.'},
-      {w:'feature', p:'/ˈfiːtʃə(r)/', v:'tính năng; đặc điểm', h:'New feature.'},
-      {w:'focus', p:'/ˈfəʊkəs/', v:'tập trung', h:'Focus on tasks.'},
-      {w:'frequent', p:'/ˈfriːkwənt/', v:'thường xuyên', h:'Frequent visits.'}
-    ];
+    // Load corpus từ file ngoài (corpus.json)
+    let CORPUS = [];
+    async function loadCorpus() {
+      try {
+        const res = await fetch('corpus_translated.json');
+        if (!res.ok) throw new Error('Không tải được corpus_translated.json');
+        CORPUS = await res.json();
+      } catch (e) {
+        // fallback: dữ liệu mẫu nếu không tải được file ngoài
+        CORPUS = [
+          {w:'abandon', p:'/əˈbændən/', v:'từ bỏ; bỏ rơi', h:'They had to abandon the car.', h_vi:'Họ đã phải bỏ chiếc xe.'},
+          {w:'ability', p:'/əˈbɪləti/', v:'khả năng', h:'Her ability is impressive.', h_vi:'Khả năng của cô ấy thật ấn tượng.'}
+        ];
+        console.error('Lỗi tải corpus:', e);
+      }
+    }
 
     const LS_KEYS = {
       todaySet: 'md5t_today_set',        // {date:'YYYY-MM-DD', items:[indexes]}
@@ -419,7 +1077,9 @@
           <div class="meaning"><span class="vi hidden">${it.v}</span>
             <button class="btn reveal">Hiện nghĩa</button>
           </div>
-          <div class="muted" style="margin-top:8px">Ví dụ: <em>${it.h || ''}</em></div>
+          <div class="muted" style="margin-top:8px">Ví dụ: <em>${it.h || ''}</em>
+            ${it.h_vi ? `<button class='btn btn-xs reveal-example' style='margin-left:10px'>Hiện nghĩa ví dụ</button> <span class='example-vi hidden' style='color:#16a34a'>${it.h_vi}</span>` : ''}
+          </div>
         `;
         frag.appendChild(card);
       });
@@ -427,6 +1087,11 @@
       $$('#lesson .reveal').forEach(btn=>btn.addEventListener('click', e=>{
         const box = e.currentTarget.closest('.meaning');
         box.querySelector('.vi').classList.remove('hidden');
+        e.currentTarget.remove();
+      }));
+      $$('#lesson .reveal-example').forEach(btn=>btn.addEventListener('click', e=>{
+        const box = e.currentTarget.closest('.muted');
+        box.querySelector('.example-vi').classList.remove('hidden');
         e.currentTarget.remove();
       }));
 
@@ -449,9 +1114,11 @@
         updateStreak();
         // Nếu đã đăng nhập thì lưu lên Firestore
         if(auth.currentUser) await saveLearnedToFirestore(auth.currentUser.uid, learned);
-        alert('Đã lưu 5 từ của ngày ' + set.date + ' vào danh sách đã học.');
+        // <CHANGE> Updated to use new toast system
+        showToast('Hoàn thành!', `Đã lưu 5 từ của ngày ${set.date} vào danh sách đã học.`, 'success');
       } else {
-        alert('Ngày hôm nay đã được lưu trước đó.');
+        // <CHANGE> Updated to use new toast system
+        showToast('Thông báo', 'Ngày hôm nay đã được lưu trước đó.', 'warning');
       }
       renderLesson(); renderLearned();
     }
@@ -496,7 +1163,11 @@
     function startQuiz(){
       const set = ensureTodaySet();
       const todayWords = set.items.map(i=>CORPUS[i]);
-      if(todayWords.length < 5){ alert('Chưa có đủ từ cho hôm nay.'); return; }
+      if(todayWords.length < 5){ 
+        // <CHANGE> Updated to use new toast system
+        showToast('Lỗi', 'Chưa có đủ từ cho hôm nay.', 'error'); 
+        return; 
+      }
       const questions = todayWords.map(it=>({
         prompt:`Từ nào khớp với nghĩa: \"${it.v}\"?`,
         correct: it.w,
@@ -524,6 +1195,8 @@
               const res = document.createElement('div'); res.style.marginTop='14px';
               res.innerHTML = `<div class="card">✅ Hoàn thành! Điểm: <strong>${score}/${questions.length}</strong> — ${(score*100/questions.length).toFixed(0)}%</div>`;
               quizRoot.appendChild(res);
+              // <CHANGE> Added toast notification for quiz completion
+              showToast('Hoàn thành bài tập!', `Bạn đạt ${score}/${questions.length} điểm (${(score*100/questions.length).toFixed(0)}%)`, 'success');
             }
           });
           choices.appendChild(btn);
@@ -546,6 +1219,8 @@
       if(confirm('Chọn lại 5 từ hôm nay? (Không ảnh hưởng đến các ngày đã lưu)')){
         localStorage.removeItem(LS_KEYS.todaySet);
         renderLesson(); // regenerate
+        // <CHANGE> Added toast notification for reset
+        showToast('Đã reset', 'Đã chọn lại 5 từ mới cho hôm nay.', 'info');
       }
     });
     $('#exportBtn').addEventListener('click', exportCSV);
@@ -558,8 +1233,8 @@
     $('#startQuiz').addEventListener('click', startQuiz);
 
     /******************** Init ********************/
-    function init(){
-      // Initialize streak on first finishDay, not on first load
+    async function init(){
+      await loadCorpus();
       renderLesson();
       renderLearned();
     }
