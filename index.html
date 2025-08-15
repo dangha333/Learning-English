@@ -1,3 +1,368 @@
+    <style>
+    @media (max-width: 600px) {
+      #mainTitleTop {
+        z-index: 1 !important;
+        position: relative !important;
+      }
+      #sidebar.sidebar-glass {
+        z-index: 3001 !important;
+        width: 100vw !important;
+        min-width: 100vw !important;
+        max-width: 100vw !important;
+        left: 0 !important;
+        right: 0 !important;
+        border-radius: 0 !important;
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-right: none !important;
+        box-shadow: none !important;
+        padding: 18px 8px 18px 8px;
+      }
+    }
+    .stepper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      margin: 32px 0 18px 0;
+      user-select: none;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1 1 0;
+      min-width: 60px;
+    }
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #3b82f6;
+      color: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2em;
+      margin-bottom: 6px;
+      transition: background 0.2s, border 0.2s, color 0.2s;
+    }
+    .step.active .step-circle {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .step.done .step-circle {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .step-label {
+      font-size: 0.98em;
+      color: #3b3b3b;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+    .step-desc {
+      font-size: 0.85em;
+      color: #888;
+      text-align: center;
+    }
+    .step-connector {
+      flex: 0 0 32px;
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin-bottom: 18px;
+      margin-left: -16px;
+      margin-right: -16px;
+      z-index: 0;
+    }
+    .step.done ~ .step-connector {
+      background: #10b981;
+    }
+    @media (max-width: 600px) {
+      .stepper {
+        gap: 4px;
+        margin: 10px 0 6px 0;
+        padding: 0 2vw;
+        flex-wrap: wrap;
+      }
+      .step {
+        min-width: 0;
+        flex: 1 1 0;
+      }
+      .step-label {
+        font-size: 0.78em;
+        margin-bottom: 0;
+      }
+      .step-desc {
+        font-size: 0.68em;
+        margin-bottom: 0;
+      }
+      .step-circle {
+        width: 22px;
+        height: 22px;
+        font-size: 0.95em;
+        margin-bottom: 2px;
+      }
+      .step-connector {
+        flex: 0 0 6px;
+        height: 2px;
+        margin-bottom: 4px;
+        margin-left: -2px;
+        margin-right: -2px;
+      }
+    }
+    </style>
+  <!-- Main Title above stepper -->
+  <div id="mainTitleTop" style="width:100vw;text-align:center;margin:18px 0 0 0;z-index:3000;position:relative;">
+    <h1 style="text-align:center;margin:0 0 10px 0;font-size:2.2em;font-weight:800;background:linear-gradient(90deg,#3b82f6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px;">Mỗi ngày 5 từ tiếng Anh mới</h1>
+  </div>
+  <!-- Donut progress card (giữ nguyên vị trí) -->
+  <!-- Stepper progress bar: chuyển xuống dưới donut progress -->
+  <div class="stepper" id="learningStepper">
+    <div class="step active" data-step="1">
+      <div class="step-circle">1</div>
+      <div class="step-label">Học nghĩa</div>
+      <div class="step-desc">Xem & ghi nhớ từ mới</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step" data-step="2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Luyện tập</div>
+      <div class="step-desc">Làm bài trắc nghiệm</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step" data-step="3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Hoàn thành</div>
+      <div class="step-desc">Đánh dấu hoàn thành</div>
+    </div>
+  </div>
+  <script>
+  // Âm thanh trả lời đúng
+  const correctSound = new Audio('sounds/news-ting-6832.mp3');
+  correctSound.volume = 0.5;
+  // Âm thanh trả lời sai
+  const wrongSound = new Audio('sounds/error-12662.mp3');
+  wrongSound.volume = 0.7;
+    // Stepper progress logic: highlight step based on tab
+    // Stepper trạng thái backend: 1=đang học nghĩa, 2=đang luyện tập, 3=đã hoàn thành
+    // Stepper progress logic: highlight step based on tab and backend state
+    function getCurrentStep() {
+  // Chỉ khi đã hoàn thành ngày học (bấm nút hoàn thành), mới active bước 3
+  if (localStorage.getItem('md5t_day_done') === '1') return 3;
+  // Nếu tab luyện tập đang mở (id=tab-practice không có class hidden) thì step 2 active
+  const tabPractice = document.getElementById('tab-practice');
+  if (tabPractice && !tabPractice.classList.contains('hidden')) return 2;
+  // Nếu tab đã học đang mở mà chưa hoàn thành, vẫn giữ step 2 (đang luyện tập)
+  const tabLearned = document.getElementById('tab-learned');
+  if (tabLearned && !tabLearned.classList.contains('hidden')) return 2;
+  // Mặc định là bước 1
+  return 1;
+    }
+
+    function updateStepper() {
+      const stepper = document.getElementById('learningStepper');
+      if (!stepper) return;
+      const steps = stepper.querySelectorAll('.step');
+      // Xóa hết trạng thái
+      steps.forEach(step => step.classList.remove('active','done'));
+      const currentStep = getCurrentStep();
+      // Đánh dấu các bước đã hoàn thành
+      for (let i = 0; i < steps.length; i++) {
+        if (i+1 < currentStep) steps[i].classList.add('done');
+      }
+      // Đánh dấu bước hiện tại là active
+      const activeStepDiv = stepper.querySelector('.step[data-step="'+currentStep+'"]');
+      if (activeStepDiv) activeStepDiv.classList.add('active');
+    }
+
+    // Đảm bảo updateStepper luôn chạy khi tab chuyển bằng phím tắt, click, hoặc code
+    function setupStepperObservers() {
+      // Update on DOMContentLoaded
+      document.addEventListener('DOMContentLoaded', function() {
+        updateStepper();
+        // Tab click event
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', ()=>{
+            // Khi chuyển tab, nếu chưa hoàn thành thì xóa trạng thái hoàn thành
+            if (localStorage.getItem('md5t_day_done') !== '1') {
+              localStorage.removeItem('md5t_day_done');
+            }
+            setTimeout(updateStepper, 20);
+          });
+        });
+        // Update on tab section visibility change
+        ['tab-lesson','tab-practice','tab-learned'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            new MutationObserver(updateStepper).observe(el, { attributes: true, attributeFilter: ['class'] });
+          }
+        });
+        // Khi bấm nút hoàn thành ngày học thì set trạng thái step 3
+        const finishDayBtn = document.getElementById('finishDay');
+        if (finishDayBtn) {
+          finishDayBtn.addEventListener('click', function() {
+            localStorage.setItem('md5t_day_done', '1');
+            setTimeout(updateStepper, 10);
+          });
+        }
+        // Khi chọn lại ngày mới thì reset stepper về bước 1
+        const resetTodayBtn = document.getElementById('resetToday');
+        if (resetTodayBtn) {
+          resetTodayBtn.addEventListener('click', function() {
+            localStorage.removeItem('md5t_day_done');
+            setTimeout(updateStepper, 10);
+          });
+        }
+      });
+    }
+    setupStepperObservers();
+  </script>
+    <style>
+    @media (max-width: 600px) {
+      body {
+        background: #10182a;
+      }
+      #mainTitleTop {
+        margin-top: 12px !important;
+        margin-bottom: 10px !important;
+        padding: 0 2vw;
+      }
+      #mainTitleTop h1 {
+        font-size: 1.45em !important;
+        margin: 0 0 10px 0 !important;
+        letter-spacing: 1.5px;
+        line-height: 1.2;
+      }
+      .sidebar-toggle-btn {
+        top: 60px !important;
+        left: 12px !important;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+        z-index: 2100;
+      }
+      .stepper {
+        gap: 10px;
+        margin: 10px 0 18px 0 !important;
+        padding: 0 2vw;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .step {
+        min-width: 0;
+        flex: 1 1 0;
+        padding: 0 2px;
+      }
+      .step-label {
+        font-size: 1em;
+        margin-bottom: 0;
+        font-weight: 700;
+        color: #fff;
+      }
+      .step-desc {
+        font-size: 0.78em;
+        margin-bottom: 0;
+        color: #b5c6e0;
+      }
+      .step-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 1.15em;
+        margin-bottom: 2px;
+        border-width: 2.5px;
+      }
+      .step-connector {
+        flex: 0 0 8px;
+        height: 2.5px;
+        margin-bottom: 4px;
+        margin-left: -2px;
+        margin-right: -2px;
+      }
+      .donut-progress-wrap {
+        margin-top: 18px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+      }
+      .donut-progress-card {
+        min-width: 0;
+        padding: 16px 4vw 12px 4vw;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px #0003;
+        background: #181e2a;
+      }
+      .donut-numbers {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .donut-numbers .donut-label {
+        font-size: 1em;
+        padding: 2px 8px;
+        margin-right: 4px;
+      }
+      .donut-numbers #learnedCount {
+        font-size: 1.3em;
+      }
+      .donut-numbers .donut-sep {
+        font-size: 1em;
+      }
+      .donut-numbers #totalWordsCount {
+        font-size: 1em;
+      }
+      .main-nav {
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .main-nav .tab {
+        font-size: 1em;
+        padding: 10px 12px;
+        border-radius: 12px;
+        margin-bottom: 4px;
+      }
+      .main-toolbar {
+        padding: 10px 4vw 10px 4vw;
+        border-radius: 12px;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .lesson-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 12px;
+      }
+      .card {
+        min-width: 0;
+        padding: 14px 8px;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px #0002;
+      }
+      .btn, .btn.primary, .btn.success, .btn.warn {
+        font-size: 1em;
+        padding: 12px 0;
+        border-radius: 12px;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .footer {
+        font-size: 0.9em;
+        padding: 1.2em 0;
+      }
+    }
+    </style>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -837,10 +1202,47 @@
   </style>
 </head>
 <body>
+  <!-- Main Title at the very top -->
+  <div id="mainTitleTop" style="width:100vw;text-align:center;margin:18px 0 0 0;z-index:3000;position:relative;">
+
+  </div>
   <!-- Sidebar toggle button -->
-  <button id="sidebarToggle" style="position:fixed;top:28px;left:18px;z-index:2100;background:linear-gradient(135deg,#ffb385,#ff9a8b);color:#fff;border:none;border-radius:50%;width:44px;height:44px;box-shadow:0 2px 8px #0002;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:background 0.2s;outline:none;">
+  <button id="sidebarToggle" class="sidebar-toggle-btn">
     <span id="sidebarToggleIcon">☰</span>
   </button>
+    <style>
+    .sidebar-toggle-btn {
+      position: fixed;
+      top: 28px;
+      left: 18px;
+      z-index: 2100;
+      background: linear-gradient(135deg,#ffb385,#ff9a8b);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      box-shadow: 0 2px 8px #0002;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: background 0.2s;
+      outline: none;
+    }
+    @media (max-width: 600px) {
+      .sidebar-toggle-btn {
+        position: absolute;
+        top: 54px;
+        left: 12px;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+        z-index: 2100;
+      }
+    }
+    </style>
   <!-- Sidebar -->
   <aside id="sidebar" class="hidden sidebar-glass">
   <style>
@@ -871,6 +1273,7 @@
       animation: sidebarFadeIn 0.7s cubic-bezier(.4,2,.6,1);
     }
     #sidebar.sidebar-glass:not(.hidden) {
+      display: flex !important;
       box-shadow: 16px 0 48px 0 #00000066, 0 16px 48px 0 #ff9a8b33;
       background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 185, 115, 0.027) 100%);
       opacity: 1;
@@ -923,10 +1326,17 @@
     }
     @media (max-width: 600px) {
       #sidebar.sidebar-glass {
-        width: 95vw;
-        border-top-right-radius: 18px;
-        border-bottom-right-radius: 18px;
-        padding: 18px 8px 18px 8px;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  left: 0 !important;
+  right: 0 !important;
+  border-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  padding: 18px 8px 18px 8px;
       }
     }
   </style>
@@ -936,6 +1346,7 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:18px;">
       <div class="pill" id="todayLabel" style="align-self:flex-start;background:rgba(255,186,115,0.18);color:#ff9a8b;font-weight:600;font-size:1.08em;margin-bottom:2px;box-shadow:0 2px 8px #ffb38522;">Hôm nay: —</div>
+
       <div style="font-size:1.1rem;color:#ffb385;display:flex;align-items:center;gap:8px;">
         <span style="font-size:1.3em;">📈</span> Tiến độ: <span id="sidebarProgress">0</span> / <span id="sidebarTotalWords">0</span> từ
       </div>
@@ -965,19 +1376,45 @@
     const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
     function openSidebar() {
       sidebar.classList.remove('hidden');
+      sidebar.style.display = 'flex';
       sidebar.style.transform = 'translateX(0)';
       sidebarToggle.style.display = 'none';
     }
     function closeSidebar() {
       sidebar.style.transform = 'translateX(-100%)';
-      setTimeout(()=>sidebar.classList.add('hidden'), 350);
+      setTimeout(() => {
+        sidebar.classList.add('hidden');
+        sidebar.style.display = 'none';
+        sidebar.style.transform = '';
+      }, 350);
       sidebarToggle.style.display = 'flex';
     }
     sidebarToggle.onclick = openSidebar;
     sidebarClose.onclick = closeSidebar;
     // Sync sidebar info
-    function updateSidebarInfo() {
+  function updateSidebarInfo() {
       // Defensive: only update if elements exist
+      // Cập nhật donut progress
+      const learnedCount = (() => {
+        const learned = JSON.parse(localStorage.getItem('md5t_learned')||'[]');
+        if (Array.isArray(learned)) return learned.reduce((acc,g)=>acc+g.items.length,0);
+        return 0;
+      })();
+      const totalWords = window.CORPUS ? window.CORPUS.length : 0;
+      const donut = document.getElementById('donutProgress');
+      const learnedCountEl = document.getElementById('learnedCount');
+      const totalWordsCountEl = document.getElementById('totalWordsCount');
+      if (donut && totalWords > 0) {
+        const percent = Math.min(learnedCount/totalWords, 1);
+        const circleLen = 2 * Math.PI * 24; // r=24
+        donut.setAttribute('stroke-dasharray', circleLen);
+        donut.setAttribute('stroke-dashoffset', circleLen * (1-percent));
+        donut.setAttribute('stroke','#6366f1');
+        donut.style.transition = 'stroke-dashoffset 0.7s cubic-bezier(.4,2,.6,1)';
+      }
+      if (learnedCountEl) learnedCountEl.textContent = learnedCount;
+      if (totalWordsCountEl) totalWordsCountEl.textContent = totalWords;
+      // ...existing code...
       if (sidebarProgress && sidebarTotalWords && sidebarStreak) {
         // These values are now only in sidebar, so use localStorage or fallback
         const learned = JSON.parse(localStorage.getItem('md5t_learned')||'[]');
@@ -1021,8 +1458,12 @@
     if (sidebarLogoutBtn) {
       sidebarLogoutBtn.onclick = function() {
         closeSidebar();
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) logoutBtn.click();
+        showConfirmLogout(async () => {
+          if (window.auth && typeof window.auth.signOut === 'function') {
+            await window.auth.signOut();
+            showToast('Đăng xuất thành công!', '','success');
+          }
+        });
       };
     }
     // Update sidebar info on page load and when switching tabs
@@ -1069,23 +1510,39 @@
     </div>
   <button id="openAuth" class="hidden" style="display:none"></button>
   <div class="container">
-      <h1>Mỗi ngày 5 từ tiếng Anh mới</h1>
+    <div class="donut-progress-wrap">
+      <div class="donut-progress-card">
+        <svg id="learnedDonut" width="90" height="90" viewBox="0 0 64 64" style="margin-bottom:10px;">
+          <circle cx="32" cy="32" r="26" fill="#181e2a" />
+          <circle cx="32" cy="32" r="24" fill="none" stroke="#2e3650" stroke-width="8" />
+          <circle id="donutProgress" cx="32" cy="32" r="24" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" stroke-dasharray="150.72" stroke-dashoffset="150.72"/>
+        </svg>
+        <div class="donut-numbers">
+          <span class="donut-label">Đã học</span>
+          <span id="learnedCount">0</span>
+          <span class="donut-sep">/</span>
+          <span id="totalWordsCount">0</span>
+        </div>
+      </div>
+    </div>
+   
 
 
 
-        <nav>
-          <button class="tab active" data-tab="lesson">📚 Bài học hôm nay</button>
-          <button class="tab" data-tab="practice">🧠 Luyện tập</button>
-          <button class="tab" data-tab="learned">✅ Từ đã học</button>
-        </nav>
+
+      <nav style="display:flex;justify-content:center;gap:14px;margin-bottom:22px;">
+        <button class="tab active" data-tab="lesson">📚 Bài học hôm nay</button>
+        <button class="tab" data-tab="practice">🧠 Luyện tập</button>
+        <button class="tab" data-tab="learned">✅ Từ đã học</button>
+      </nav>
     <!-- LESSON TAB -->
     <section id="tab-lesson">
-      <div class="toolbar">
-        <button id="finishDay" class="btn success" style="display:none">Đánh dấu hoàn thành ngày học</button>
-        <button id="resetToday" class="btn warn">Chọn lại 5 từ hôm nay</button>
-        <span class="muted right">Mẹo: Bấm vào "Hiện nghĩa" để tự kiểm tra trước khi xem đáp án.</span>
+      <div class="toolbar" style="justify-content:center;gap:20px;background:rgba(255,255,255,0.04);box-shadow:0 2px 8px #0001;border-radius:14px;padding:12px 18px 10px 18px;margin-bottom:18px;">
+        <button id="finishDay" class="btn success" style="display:none;min-width:180px;">Đánh dấu hoàn thành ngày học</button>
+        <button id="resetToday" class="btn warn" style="min-width:180px;">Chọn lại 5 từ hôm nay</button>
+        <span class="muted right" style="font-size:1em;">Mẹo: Bấm vào "Hiện nghĩa" để tự kiểm tra trước khi xem đáp án.</span>
       </div>
-      <div id="lesson" class="lesson-grid"></div>
+  <div id="lesson" class="lesson-grid" style="margin-top:0;grid-gap:28px 18px;"></div>
     </section>
 
     <!-- PRACTICE TAB -->
@@ -1308,32 +1765,35 @@ window.showToast = showToast;
       // Logout
       // Custom confirm popup
       function showConfirmLogout(onConfirm) {
-        let popup = document.getElementById('logoutConfirmPopup');
-        if (!popup) {
-          popup = document.createElement('div');
-          popup.id = 'logoutConfirmPopup';
-          popup.innerHTML = `
-            <div class="confirm-overlay"></div>
-            <div class="confirm-box">
-              <div class="confirm-title">Xác nhận đăng xuất</div>
-              <div class="confirm-msg">Bạn có chắc chắn muốn đăng xuất không?</div>
-              <div class="confirm-actions">
-                <button id="confirmLogoutBtn" class="btn primary">Đồng ý</button>
-                <button id="cancelLogoutBtn" class="btn warn">Hủy</button>
-              </div>
+      let popup = document.getElementById('logoutConfirmPopup');
+      if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'logoutConfirmPopup';
+        popup.innerHTML = `
+          <div class="confirm-overlay"></div>
+          <div class="confirm-box">
+            <div class="confirm-title">Xác nhận đăng xuất</div>
+            <div class="confirm-msg">Bạn có chắc chắn muốn đăng xuất không?</div>
+            <div class="confirm-actions">
+              <button id="confirmLogoutBtn" class="btn primary">Đồng ý</button>
+              <button id="cancelLogoutBtn" class="btn warn">Hủy</button>
             </div>
-          `;
-          document.body.appendChild(popup);
-        }
-        popup.style.display = 'block';
-        popup.querySelector('#confirmLogoutBtn').onclick = () => {
-          popup.style.display = 'none';
-          onConfirm();
-        };
-        popup.querySelector('#cancelLogoutBtn').onclick = () => {
-          popup.style.display = 'none';
-        };
+          </div>
+        `;
+        document.body.appendChild(popup);
       }
+      popup.style.display = 'block';
+      popup.querySelector('#confirmLogoutBtn').onclick = () => {
+        popup.style.display = 'none';
+        onConfirm();
+      };
+      popup.querySelector('#cancelLogoutBtn').onclick = () => {
+        popup.style.display = 'none';
+      };
+    }
+
+// Ensure global access for sidebar logout
+window.showConfirmLogout = showConfirmLogout;
 
       if (logoutBtn) {
         logoutBtn.onclick = async function() {
@@ -1376,19 +1836,28 @@ window.showToast = showToast;
     /******************** Data ********************/
     // Load corpus từ file ngoài (corpus.json)
     let CORPUS = [];
-    async function loadCorpus() {
+  async function loadCorpus() {
       try {
-        const res = await fetch('corpus_translated.json');
+        let res = await fetch('corpus_translated.json');
         if (!res.ok) throw new Error('Không tải được corpus_translated.json');
         CORPUS = await res.json();
-      } catch (e) {
-        // fallback: dữ liệu mẫu nếu không tải được file ngoài
-        CORPUS = [
-          {w:'abandon', p:'/əˈbændən/', v:'từ bỏ; bỏ rơi', h:'They had to abandon the car.', h_vi:'Họ đã phải bỏ chiếc xe.'},
-          {w:'ability', p:'/əˈbɪləti/', v:'khả năng', h:'Her ability is impressive.', h_vi:'Khả năng của cô ấy thật ấn tượng.'}
-        ];
-        console.error('Lỗi tải corpus:', e);
+        if (!Array.isArray(CORPUS) || CORPUS.length < 10) throw new Error('corpus_translated.json rỗng hoặc lỗi');
+      } catch (e1) {
+        try {
+          let res2 = await fetch('corpus.json');
+          if (!res2.ok) throw new Error('Không tải được corpus.json');
+          CORPUS = await res2.json();
+          if (!Array.isArray(CORPUS) || CORPUS.length < 10) throw new Error('corpus.json rỗng hoặc lỗi');
+        } catch (e2) {
+          // fallback: dữ liệu mẫu nếu không tải được file ngoài
+          CORPUS = [
+            {w:'abandon', p:'/əˈbændən/', v:'từ bỏ; bỏ rơi', h:'They had to abandon the car.', h_vi:'Họ đã phải bỏ chiếc xe.'},
+            {w:'ability', p:'/əˈbɪləti/', v:'khả năng', h:'Her ability is impressive.', h_vi:'Khả năng của cô ấy thật ấn tượng.'}
+          ];
+          console.error('Lỗi tải corpus:', e1, e2);
+        }
       }
+      window.CORPUS = CORPUS;
     }
 
     const LS_KEYS = {
@@ -1597,8 +2066,16 @@ window.showToast = showToast;
           btn.addEventListener('click',()=>{
             if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return;
             answered++;
-            if(opt===q.correct){ btn.classList.add('correct'); score++; }
-            else { btn.classList.add('wrong'); [...choices.children].forEach(c=>{ if(c.textContent===q.correct) c.classList.add('correct'); }); }
+            if(opt===q.correct){
+              btn.classList.add('correct');
+              score++;
+              try { correctSound.currentTime = 0; correctSound.play(); } catch(e){}
+            }
+            else {
+              btn.classList.add('wrong');
+              try { wrongSound.currentTime = 0; wrongSound.play(); } catch(e){}
+              [...choices.children].forEach(c=>{ if(c.textContent===q.correct) c.classList.add('correct'); });
+            }
             if(answered===questions.length){
               const res = document.createElement('div'); res.style.marginTop='14px';
               res.innerHTML = `<div class=\"card\">✅ Hoàn thành! Điểm: <strong>${score}/${questions.length}</strong> — ${(score*100/questions.length).toFixed(0)}%</div>`;
@@ -1607,8 +2084,36 @@ window.showToast = showToast;
                 document.getElementById('finishDay').style.display = 'inline-block';
               } else {
                 document.getElementById('finishDay').style.display = 'none';
+                // Hiện popup thông báo và nút làm lại
+                showQuizRetryPopup();
               }
             }
+// Popup khi không đủ 5/5 điểm quiz
+function showQuizRetryPopup() {
+  let popup = document.getElementById('quizRetryPopup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'quizRetryPopup';
+    popup.innerHTML = `
+      <div style="position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;color:#222;border-radius:16px;min-width:320px;box-shadow:0 8px 32px #0005;padding:32px 28px 22px 28px;text-align:center;animation:popupIn .25s;max-width:90vw;">
+          <div style="font-size:20px;font-weight:600;margin-bottom:10px;">Hãy làm đúng 5/5 để đánh dấu hoàn thành ngày học</div>
+          <button id="quizRetryBtn" class="btn primary" style="margin-top:18px;min-width:120px;">Làm lại</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(popup);
+  }
+  popup.style.display = 'flex';
+  const btn = popup.querySelector('#quizRetryBtn');
+  if(btn) {
+    btn.onclick = function() {
+      popup.style.display = 'none';
+      // Gọi lại startQuiz để làm lại quiz
+      if(typeof startQuiz === 'function') startQuiz();
+    };
+  }
+}
           });
           choices.appendChild(btn);
         });
@@ -1652,6 +2157,11 @@ window.showToast = showToast;
     $('#clearAll').addEventListener('click', ()=>{
       if(confirm('XÓA TẤT CẢ dữ liệu (bài học, tiến độ, streak)?')){
         Object.values(LS_KEYS).forEach(k=>localStorage.removeItem(k));
+        // Reset stepper UI về trạng thái ban đầu (xóa class active, done)
+        const stepper = document.getElementById('learningStepper');
+        if (stepper) {
+          stepper.querySelectorAll('.step').forEach(step => step.classList.remove('active','done'));
+        }
         // Nếu đã đăng nhập thì xóa trường 'learned' trong Firestore, chờ thao tác xong mới reload
         const reloadPage = ()=>{
           showToast('Đã xóa tất cả dữ liệu!', '', 'success');
@@ -1674,6 +2184,7 @@ window.showToast = showToast;
       await loadCorpus();
       renderLesson();
       renderLearned();
+      if (typeof updateSidebarInfo === 'function') updateSidebarInfo();
     }
     init();
   </script>
