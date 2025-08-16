@@ -234,6 +234,24 @@
     setupStepperObservers();
   </script>
     <style>
+    /* Pull-to-refresh indicator */
+    #pullToRefresh {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      background: #fff;
+      color: #3b82f6;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px #0002;
+      padding: 6px 18px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
     @media (max-width: 600px) {
       body {
         background: #10182a;
@@ -1209,6 +1227,51 @@
     .card:nth-child(5) { animation-delay: 0.4s; }
 
   </style>
+  <script>
+  // Pull-to-refresh cho PWA iOS/Android
+  let touchStartY = 0, isPulling = false;
+  const minPull = 60; // px
+  document.addEventListener('touchstart', function(e) {
+    if (window.scrollY === 0) {
+      touchStartY = e.touches[0].clientY;
+      isPulling = true;
+    }
+  });
+  document.addEventListener('touchmove', function(e) {
+    if (!isPulling) return;
+    const delta = e.touches[0].clientY - touchStartY;
+    if (delta > minPull) {
+      showPullToRefresh();
+    } else {
+      hidePullToRefresh();
+    }
+  });
+  document.addEventListener('touchend', function(e) {
+    if (!isPulling) return;
+    const delta = e.changedTouches[0].clientY - touchStartY;
+    if (delta > minPull) {
+      hidePullToRefresh();
+      location.reload();
+    } else {
+      hidePullToRefresh();
+    }
+    isPulling = false;
+  });
+  function showPullToRefresh() {
+    let el = document.getElementById('pullToRefresh');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'pullToRefresh';
+      el.textContent = '↻ Kéo xuống để làm mới';
+      document.body.appendChild(el);
+    }
+    el.style.opacity = 1;
+  }
+  function hidePullToRefresh() {
+    const el = document.getElementById('pullToRefresh');
+    if (el) el.style.opacity = 0;
+  }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <style>
