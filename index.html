@@ -2286,5 +2286,42 @@ function showQuizRetryPopup() {
     }
     init();
   </script>
-</body>
+    <!-- Firebase Cloud Messaging Push Notification Registration -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging-compat.js"></script>
+    <script>
+      // Thay các giá trị bên dưới bằng thông tin Firebase của bạn
+  const firebaseConfigPush = {
+     apiKey: "AIzaSyCg9wLWjLkwf5mCaRsAcp3obVi-CKXoH-E",
+   authDomain: "learning-english-56f73.firebaseapp.com",
+  projectId: "learning-english-56f73",
+  messagingSenderId: "339132124762",
+   appId: "1:339132124762:web:48a113f910f12fd84a1263",
+      };
+  firebase.initializeApp(firebaseConfigPush);
+      if ('serviceWorker' in navigator && 'Notification' in window) {
+        navigator.serviceWorker.register('firebase-messaging-sw.js')
+          .then(function(reg) {
+            const messaging = firebase.messaging();
+            // Thay YOUR_VAPID_KEY bằng VAPID key lấy từ Firebase Console (Cloud Messaging)
+            messaging.getToken({ vapidKey: 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8', serviceWorkerRegistration: reg }).then((currentToken) => {
+              if (currentToken) {
+                // Gửi token này lên server hoặc lưu vào Firestore theo user
+                console.log('Push token:', currentToken);
+                // TODO: Gửi token lên Firestore nếu user đã đăng nhập
+              } else {
+                Notification.requestPermission().then(permission => {
+                  if (permission === 'granted') {
+                    messaging.getToken({ vapidKey: 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8', serviceWorkerRegistration: reg }).then(token => {
+                      console.log('Push token:', token);
+                      // TODO: Gửi token lên Firestore nếu user đã đăng nhập
+                    });
+                  }
+                });
+              }
+            });
+          });
+      }
+    </script>
+  </body>
 </html>
