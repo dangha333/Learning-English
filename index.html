@@ -1438,9 +1438,8 @@ html, body {
       <div id="sidebarUserInfo" style="font-size:1.1rem;color:#ff9a8b;display:none;align-items:center;gap:8px;">
         <span style="font-size:1.3em;">👤</span> <span id="sidebarUserEmail"></span>
       </div>
-      <button id="sidebarLoginBtn" class="btn primary" style="width:100%;margin-top:10px;">Đăng nhập</button>
-      <button id="enableNotificationsBtn" class="btn" style="width:100%;margin-top:6px;">Bật thông báo</button>
-      <button id="sidebarLogoutBtn" class="btn warn" style="width:100%;margin-top:10px;display:none;">Đăng xuất</button>
+  <button id="sidebarLoginBtn" class="btn primary" style="width:100%;margin-top:10px;">Đăng nhập</button>
+  <button id="sidebarLogoutBtn" class="btn warn" style="width:100%;margin-top:10px;display:none;">Đăng xuất</button>
     </div>
   </aside>
   <header>
@@ -1553,45 +1552,7 @@ html, body {
         if (openAuthBtn) openAuthBtn.click();
       };
     }
-    // Enable notifications button
-    const enableNotificationsBtn = document.getElementById('enableNotificationsBtn');
-    if (enableNotificationsBtn) {
-      enableNotificationsBtn.onclick = async function() {
-        if (!('serviceWorker' in navigator)) {
-          showToast('Lỗi', 'Trình duyệt không hỗ trợ Service Worker.', 'error');
-          return;
-        }
-        try {
-          // register SW at root
-          const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-          showToast('OK', 'Service worker đã đăng ký.', 'success');
-          // Request permission
-          const perm = await Notification.requestPermission();
-          if (perm !== 'granted') {
-            showToast('Từ chối', 'Bạn đã từ chối nhận thông báo.', 'warning');
-            return;
-          }
-          if (!window.firebase || !firebase.messaging) {
-            showToast('Lỗi', 'Firebase Messaging chưa được nạp.', 'error');
-            return;
-          }
-          const messaging = firebase.messaging();
-          const VAPID_KEY = 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8';
-          const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-          console.log('FCM token', token);
-          // Save token to Firestore if user is logged in
-          if (token && auth && auth.currentUser) {
-            try { await saveTokenForUser(auth.currentUser.uid, token); } catch(e){ console.warn('Không lưu token:', e); }
-          }
-          showToast('Hoàn tất', 'Bạn đã bật thông báo.', 'success');
-          const statusEl = document.getElementById('notificationsStatus');
-          if (statusEl) statusEl.textContent = 'Trạng thái thông báo: đã bật';
-        } catch (err) {
-          console.error('Enable notifications failed', err);
-          showToast('Lỗi', (err && err.message) ? err.message : String(err), 'error');
-        }
-      };
-    }
+  // enable notifications UI removed — browser prompt is triggered on PWA installation / user gesture
     // Update sidebar info on page load and when switching tabs
     document.addEventListener('DOMContentLoaded', updateSidebarInfo);
     setInterval(updateSidebarInfo, 1000);
@@ -1710,14 +1671,7 @@ html, body {
   const auth = firebase.auth();
   window.auth = auth;
   const db = firebase.firestore();
-  const notificationsStatusEl = document.createElement('div');
-  notificationsStatusEl.id = 'notificationsStatus';
-  notificationsStatusEl.style.marginTop = '8px';
-  notificationsStatusEl.style.fontSize = '0.95rem';
-  notificationsStatusEl.style.color = '#ffd6a5';
-  // Append to sidebar info area if present
-  const sidebarEl = document.getElementById('sidebar');
-  if (sidebarEl) sidebarEl.querySelector('div')?.appendChild(notificationsStatusEl);
+  // notifications status UI removed per user request
     // Firestore helpers
     async function saveLearnedToFirestore(uid, learned) {
       if (!uid) return;
@@ -2007,41 +1961,7 @@ window.showConfirmLogout = showConfirmLogout;
           }
           // Luôn cập nhật lại thông tin sidebar khi trạng thái đăng nhập thay đổi
           if (typeof updateSidebarInfo === 'function') updateSidebarInfo();
-          // Update notifications UI
-          const enableBtn = document.getElementById('enableNotificationsBtn');
-          const statusEl = document.getElementById('notificationsStatus');
-          const disableBtnId = 'disableNotificationsBtn';
-          let disableBtn = document.getElementById(disableBtnId);
-          if (user) {
-            if (statusEl) statusEl.textContent = 'Trạng thái thông báo: chưa biết';
-            if (!disableBtn) {
-              disableBtn = document.createElement('button');
-              disableBtn.id = disableBtnId;
-              disableBtn.className = 'btn warn';
-              disableBtn.style.width = '100%';
-              disableBtn.style.marginTop = '6px';
-              disableBtn.textContent = 'Tắt thông báo';
-              enableBtn?.insertAdjacentElement('afterend', disableBtn);
-              disableBtn.onclick = async function() {
-                // revoke token
-                try {
-                  if (!window.firebase || !firebase.messaging) throw new Error('Firebase Messaging không khả dụng');
-                  const swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
-                  const messaging = firebase.messaging();
-                  const token = await messaging.getToken({ serviceWorkerRegistration: swReg }).catch(()=>null);
-                  if (token) {
-                    await removeTokenForUser(user.uid, token);
-                    await messaging.deleteToken(token);
-                    showToast('Đã tắt', 'Thông báo đã được tắt cho tài khoản này.', 'success');
-                    if (statusEl) statusEl.textContent = 'Trạng thái thông báo: đã tắt';
-                  }
-                } catch(err) { console.error(err); showToast('Lỗi', (err && err.message) ? err.message : String(err), 'error'); }
-              };
-            }
-          } else {
-            if (statusEl) statusEl.textContent = '';
-            if (disableBtn) disableBtn.remove();
-          }
+          // notifications status UI removed
         });
       }
     })();
