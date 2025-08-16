@@ -1,4 +1,4 @@
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1439,6 +1439,7 @@ html, body {
         <span style="font-size:1.3em;">👤</span> <span id="sidebarUserEmail"></span>
       </div>
       <button id="sidebarLoginBtn" class="btn primary" style="width:100%;margin-top:10px;">Đăng nhập</button>
+      <button id="enableNotificationsBtn" class="btn" style="width:100%;margin-top:6px;">Bật thông báo</button>
       <button id="sidebarLogoutBtn" class="btn warn" style="width:100%;margin-top:10px;display:none;">Đăng xuất</button>
     </div>
   </aside>
@@ -1552,16 +1553,43 @@ html, body {
         if (openAuthBtn) openAuthBtn.click();
       };
     }
-    if (sidebarLogoutBtn) {
-      sidebarLogoutBtn.onclick = function() {
-        closeSidebar();
-        showConfirmLogout(async () => {
-          if (window.auth && typeof window.auth.signOut === 'function') {
-            await window.auth.signOut();
-            showToast('Đăng xuất thành công!', '','success');
-            setTimeout(()=>location.reload(), 800);
+    // Enable notifications button
+    const enableNotificationsBtn = document.getElementById('enableNotificationsBtn');
+    if (enableNotificationsBtn) {
+      enableNotificationsBtn.onclick = async function() {
+        if (!('serviceWorker' in navigator)) {
+          showToast('Lỗi', 'Trình duyệt không hỗ trợ Service Worker.', 'error');
+          return;
+        }
+        try {
+          // register SW at root
+          const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          showToast('OK', 'Service worker đã đăng ký.', 'success');
+          // Request permission
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            showToast('Từ chối', 'Bạn đã từ chối nhận thông báo.', 'warning');
+            return;
           }
-        });
+          if (!window.firebase || !firebase.messaging) {
+            showToast('Lỗi', 'Firebase Messaging chưa được nạp.', 'error');
+            return;
+          }
+          const messaging = firebase.messaging();
+          const VAPID_KEY = 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8';
+          const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+          console.log('FCM token', token);
+          // Save token to Firestore if user is logged in
+          if (token && auth && auth.currentUser) {
+            try { await saveTokenForUser(auth.currentUser.uid, token); } catch(e){ console.warn('Không lưu token:', e); }
+          }
+          showToast('Hoàn tất', 'Bạn đã bật thông báo.', 'success');
+          const statusEl = document.getElementById('notificationsStatus');
+          if (statusEl) statusEl.textContent = 'Trạng thái thông báo: đã bật';
+        } catch (err) {
+          console.error('Enable notifications failed', err);
+          showToast('Lỗi', (err && err.message) ? err.message : String(err), 'error');
+        }
       };
     }
     // Update sidebar info on page load and when switching tabs
@@ -1649,8 +1677,7 @@ html, body {
         <button id="startQuiz" class="btn primary">Bắt đầu bài luyện tập</button>
         <span class="muted">5 câu trắc nghiệm dựa trên 5 từ hôm nay.</span>
       </div>
-      <div id="quiz" class="quiz"></div>
-    </section>
+      <div id="quiz" class="quiz"></div>    </section>
 
     <!-- LEARNED TAB -->
     <section id="tab-learned" class="hidden">
@@ -1683,12 +1710,35 @@ html, body {
   const auth = firebase.auth();
   window.auth = auth;
   const db = firebase.firestore();
+  const notificationsStatusEl = document.createElement('div');
+  notificationsStatusEl.id = 'notificationsStatus';
+  notificationsStatusEl.style.marginTop = '8px';
+  notificationsStatusEl.style.fontSize = '0.95rem';
+  notificationsStatusEl.style.color = '#ffd6a5';
+  // Append to sidebar info area if present
+  const sidebarEl = document.getElementById('sidebar');
+  if (sidebarEl) sidebarEl.querySelector('div')?.appendChild(notificationsStatusEl);
     // Firestore helpers
     async function saveLearnedToFirestore(uid, learned) {
       if (!uid) return;
       try {
         await db.collection('users').doc(uid).set({ learned }, { merge: true });
       } catch (e) { console.error('Lỗi lưu Firestore:', e); }
+    }
+    // Save FCM token to user's Firestore doc
+    async function saveTokenForUser(uid, token) {
+      if (!uid || !token) return;
+      try {
+        const ref = db.collection('users').doc(uid);
+        await ref.set({ fcmTokens: firebase.firestore.FieldValue.arrayUnion(token) }, { merge: true });
+      } catch (e) { console.error('Lỗi lưu token FCM:', e); }
+    }
+    async function removeTokenForUser(uid, token) {
+      if (!uid || !token) return;
+      try {
+        const ref = db.collection('users').doc(uid);
+        await ref.update({ fcmTokens: firebase.firestore.FieldValue.arrayRemove(token) });
+      } catch (e) { console.error('Lỗi xóa token FCM:', e); }
     }
     async function loadLearnedFromFirestore(uid) {
       if (!uid) return null;
@@ -1848,16 +1898,35 @@ window.showToast = showToast;
           showToast('Lỗi', msg, 'error');
         }
       };
-      // Google sign-in
+      
+      // Google sign-in (defensive: some firebase bundles may not expose firebase.auth.GoogleAuthProvider)
       googleSignIn.onclick = async function() {
-        const provider = new firebase.auth.GoogleAuthProvider();
         try {
+          // Try the common compat location first
+          let ProviderClass = null;
+          if (window.firebase && firebase.auth && firebase.auth.GoogleAuthProvider) {
+            ProviderClass = firebase.auth.GoogleAuthProvider;
+          } else if (window.firebase && typeof firebase.auth === 'function' && firebase.auth().constructor && firebase.auth().constructor.GoogleAuthProvider) {
+            // fallback in case auth is a function
+            ProviderClass = firebase.auth().constructor.GoogleAuthProvider;
+          }
+
+          if (!ProviderClass) {
+            const msg = 'GoogleAuthProvider không khả dụng — kiểm tra lại import của Firebase Auth (compat).';
+            authError.textContent = msg;
+            showToast('Lỗi', msg, 'error');
+            console.error(msg, { firebase: window.firebase });
+            return;
+          }
+
+          const provider = new ProviderClass();
           await auth.signInWithPopup(provider);
           showToast('Thành công', 'Đăng nhập Google thành công!', 'success');
           hideModal();
         } catch(err) {
-          authError.textContent = err.message.replace('Firebase: ', '');
-          showToast('Lỗi', err.message.replace('Firebase: ', ''), 'error');
+          authError.textContent = (err && err.message) ? err.message.replace('Firebase: ', '') : String(err);
+          showToast('Lỗi', authError.textContent, 'error');
+          console.error('Google sign-in failed:', err);
         }
       };
       // Logout
@@ -1908,7 +1977,7 @@ window.showConfirmLogout = showConfirmLogout;
           const userInfo = document.getElementById('userInfo');
           const openAuthBtn = document.getElementById('openAuth');
           const logoutBtn = document.getElementById('logoutBtn');
-          if(user) {
+    if(user) {
             if (openAuthBtn) openAuthBtn.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'inline-block';
             if (userInfo) {
@@ -1921,6 +1990,16 @@ window.showConfirmLogout = showConfirmLogout;
               localStorage.setItem(LS_KEYS.learned, JSON.stringify(learned));
               renderLearned();
             }
+            // If we have a service worker registered and messaging available, try to get token and save it
+            try {
+              if (navigator.serviceWorker && firebase && firebase.messaging) {
+                const swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+                const messaging = firebase.messaging();
+                const VAPID_KEY = 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8';
+                const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg }).catch(()=>null);
+                if (token) await saveTokenForUser(user.uid, token);
+              }
+            } catch(e) { console.warn('Không lưu token FCM tự động:', e); }
           } else {
             if (openAuthBtn) openAuthBtn.style.display = 'inline-block';
             if (logoutBtn) logoutBtn.style.display = 'none';
@@ -1928,6 +2007,41 @@ window.showConfirmLogout = showConfirmLogout;
           }
           // Luôn cập nhật lại thông tin sidebar khi trạng thái đăng nhập thay đổi
           if (typeof updateSidebarInfo === 'function') updateSidebarInfo();
+          // Update notifications UI
+          const enableBtn = document.getElementById('enableNotificationsBtn');
+          const statusEl = document.getElementById('notificationsStatus');
+          const disableBtnId = 'disableNotificationsBtn';
+          let disableBtn = document.getElementById(disableBtnId);
+          if (user) {
+            if (statusEl) statusEl.textContent = 'Trạng thái thông báo: chưa biết';
+            if (!disableBtn) {
+              disableBtn = document.createElement('button');
+              disableBtn.id = disableBtnId;
+              disableBtn.className = 'btn warn';
+              disableBtn.style.width = '100%';
+              disableBtn.style.marginTop = '6px';
+              disableBtn.textContent = 'Tắt thông báo';
+              enableBtn?.insertAdjacentElement('afterend', disableBtn);
+              disableBtn.onclick = async function() {
+                // revoke token
+                try {
+                  if (!window.firebase || !firebase.messaging) throw new Error('Firebase Messaging không khả dụng');
+                  const swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+                  const messaging = firebase.messaging();
+                  const token = await messaging.getToken({ serviceWorkerRegistration: swReg }).catch(()=>null);
+                  if (token) {
+                    await removeTokenForUser(user.uid, token);
+                    await messaging.deleteToken(token);
+                    showToast('Đã tắt', 'Thông báo đã được tắt cho tài khoản này.', 'success');
+                    if (statusEl) statusEl.textContent = 'Trạng thái thông báo: đã tắt';
+                  }
+                } catch(err) { console.error(err); showToast('Lỗi', (err && err.message) ? err.message : String(err), 'error'); }
+              };
+            }
+          } else {
+            if (statusEl) statusEl.textContent = '';
+            if (disableBtn) disableBtn.remove();
+          }
         });
       }
     })();
@@ -2287,40 +2401,32 @@ function showQuizRetryPopup() {
     init();
   </script>
     <!-- Firebase Cloud Messaging Push Notification Registration -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging-compat.js"></script>
+    <!-- Load only messaging compat (do NOT re-initialize firebase app which would overwrite auth bundle) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
     <script>
-      // Thay các giá trị bên dưới bằng thông tin Firebase của bạn
-  const firebaseConfigPush = {
-     apiKey: "AIzaSyCg9wLWjLkwf5mCaRsAcp3obVi-CKXoH-E",
-   authDomain: "learning-english-56f73.firebaseapp.com",
-  projectId: "learning-english-56f73",
-  messagingSenderId: "339132124762",
-   appId: "1:339132124762:web:48a113f910f12fd84a1263",
-      };
-  firebase.initializeApp(firebaseConfigPush);
+      // Firebase app was initialized earlier. Use the existing app and auth/firestore bundles.
       if ('serviceWorker' in navigator && 'Notification' in window) {
         navigator.serviceWorker.register('firebase-messaging-sw.js')
           .then(function(reg) {
             const messaging = firebase.messaging();
-            // Thay YOUR_VAPID_KEY bằng VAPID key lấy từ Firebase Console (Cloud Messaging)
-            messaging.getToken({ vapidKey: 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8', serviceWorkerRegistration: reg }).then((currentToken) => {
+            // Replace with your VAPID key from Firebase Console
+            const VAPID_KEY = 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8';
+            messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg }).then((currentToken) => {
               if (currentToken) {
-                // Gửi token này lên server hoặc lưu vào Firestore theo user
                 console.log('Push token:', currentToken);
                 // TODO: Gửi token lên Firestore nếu user đã đăng nhập
               } else {
                 Notification.requestPermission().then(permission => {
                   if (permission === 'granted') {
-                    messaging.getToken({ vapidKey: 'BI084R9skKVhIaS7eSEwYNGu0vifuWBCEvve4R-U2UXCqkyfD0iYjshf396cgqsFdNHWVNC_cH9l9nesKHXYVs8', serviceWorkerRegistration: reg }).then(token => {
+                    messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg }).then(token => {
                       console.log('Push token:', token);
                       // TODO: Gửi token lên Firestore nếu user đã đăng nhập
                     });
                   }
                 });
               }
-            });
-          });
+            }).catch(err => console.warn('Unable to get messaging token', err));
+          }).catch(err => console.warn('Service worker registration failed', err));
       }
     </script>
   </body>

@@ -3,6 +3,7 @@
   "short_name": "English",
   "start_url": ".",
   "display": "standalone",
+  "gcm_sender_id": "103953800507",
   "background_color": "#f0f4f8",
   "theme_color": "#3b82f6",
   "description": "Ứng dụng học tiếng Anh mỗi ngày.",
